@@ -16,12 +16,6 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-  Build (with libusb-1.0 installed):
-   gcc -L/usr/lib64 -lusb-1.0 --std=c99 
-       -Wall -Wextra -pedantic -g -o bbusb bbusb.c
-  Last updated:
-   20090506
-
 \************************************************************************/
 
 #include <ctype.h>

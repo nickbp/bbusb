@@ -1,5 +1,23 @@
 #!/usr/bin/python
 
+'''
+  bbfinalgear.py - Retrieves countdown data from FinalGear.com
+  Copyright (C) 2009  Nicholas Parker <nickbp@gmail.com>
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+'''
+
 import time, httplib, os, os.path, sys
 from sgmllib import SGMLParser
 
@@ -26,7 +44,7 @@ def get_cached(host,hostpath,cachetimeout):
     return data
 
 class HTMLProcessor(SGMLParser):
-    """Retrieves data from grouphug.us. Returns quotes in a dictionary, where the keys are idnums."""
+    """Retrieves data from Final Gear. Creates two dictionaries with matching keysets: shownames and showtimes."""
     def reset(self):
         self.shownames = {}
 
