@@ -83,15 +83,6 @@ int hardware_close(libusb_device_handle* devh) {
 #endif
 }
 
-static void printpkt(char* data, unsigned int size) {
-    unsigned int i;
-    printf("%u: ",size);
-    for (i = 0; i < size; i++) {
-        printf("%X(%c) ", data[i], data[i]);
-    }
-    printf("\n");
-}
-
 static void sleep_ms(int ms) {
     struct timespec hundredms;
     hundredms.tv_sec = 0;
@@ -129,7 +120,13 @@ static int hardware_sendraw(libusb_device_handle* devh, char* data, unsigned int
     if (ret > 0 || devh != NULL) {
         //devh test is just to hide 'unused' warning
 #ifdef DEBUGMSG
-        printpkt(data, size);
+        //print packet contents:
+        unsigned int i;
+        printf("%u: ",size);
+        for (i = 0; i < size; i++) {
+            printf("%X(%c) ", data[i], data[i]);
+        }
+        printf("\n");
 #endif
     } else {
         printerr("Bad packet size %d or device %p\n",ret,(void*)devh);

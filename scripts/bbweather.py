@@ -85,7 +85,7 @@ soapzipreq = """<ns1:LatLonListZipCode>
 </ns1:LatLonListZipCode>""" % zipcode
 
 latlondataxml = getXmlData("LatLonListZipCode",soapzipreq,
-                        "%s.latlon.%s" % (sys.argv[0],zipcode)) #no timeout/permanent
+                        "%s.cache.latlon.%s" % (sys.argv[0],zipcode)) #no timeout/permanent
 
 try:
     latlonelement = minidom.parseString(latlondataxml).getElementsByTagName("latLonList")[0]
@@ -100,7 +100,7 @@ except:
 
 #
 # GET WEATHER DATA FOR LONG/LAT
-# (if cache file is missing or old)
+# (if cached weather is missing or old)
 #
 
 today = time.strftime("%Y-%m-%d")
@@ -120,7 +120,7 @@ weatherdataxml = getXmlData("NDFDgenByDay",soapweatherreq,
 #period-name attribute is inconsistent, so just calculate the name ourselves
 def getTimeString(xmlrawtime):
     #2009-05-28T18:00:00-04:00
-    night_boundary = 16 #technically could be 18 but just in case
+    night_boundary = 16 #technically could be 18:00 but just in case
     xmltime = time.strptime(xmlrawtime,"%Y-%m-%dT%H:%M:%S-04:00")
     curtime = time.localtime()
     if (xmltime.tm_year == curtime.tm_year and

@@ -21,9 +21,10 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-//Use this for testing without a sign attached:
+//Test without a sign attached:
 //#define NOUSB
-#define DEBUGMSG
+//Print generated packets to stdout:
+//#define DEBUGMSG
 
 #include "config.h"
 #include "hardware.h"

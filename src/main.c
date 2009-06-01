@@ -21,7 +21,7 @@
 
 #include "main.h"
 
-void help(char* appname) {
+static void help(char* appname) {
     printerr("Usage: %s <-i/-u> [configfile]\n",appname);
     printerr("\n  -i:\tre-initialize the sign (required when config file is new or modified since last update)\n");
     printerr("  -u:\tupdate the sign contents without init (avoids display interruption)\n");
@@ -30,11 +30,10 @@ void help(char* appname) {
     printerr("\n Config Syntax:\n");
     printerr("  #comment\n");
     printerr("  //comment\n");
-    printerr("  txt <transition> [text (opt if transition=nX)]\n");
-    printerr("  cmd <transition> <alloc size (max=%d)> <shell command>\n",
-             MAX_STRINGFILE_GROUP_SIZE);
-    printerr("\n Available Transition Codes (pg89-90)\n");
-    printerr(" Note: Some \"nX\" transitions don't work for \"cmd\"s.\n");
+    printerr("  txt <mode> [text (optional if mode=nX)]\n");
+    printerr("  cmd <mode> <shell command>\n");
+    printerr("\n Available Mode Codes (pg89-90)\n");
+    printerr(" Note: Some \"nX\" modes don't work for \"cmd\"s.\n");
     printerr("       Get around this by prefixing with an empty \"txt\" (ex: txt nx\\ncmd ...)\n");
     printerr("  a rotate \tp rollin \tn8 welcome\n");
     printerr("  b hold \tq rollout \tn9 sale\n");

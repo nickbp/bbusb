@@ -26,7 +26,7 @@ extern FILE* popen(const char* command, const char* modes);
 extern int pclose(FILE *stream);
 extern char *strtok_r(char *str, const char *delim, char **saveptr);
 
-int readline(char** lineptr, FILE* config) {
+static int readline(char** lineptr, FILE* config) {
     size_t buflen = 128;
     char* line = malloc(buflen);
     if (line == NULL) {
@@ -64,7 +64,7 @@ int readline(char** lineptr, FILE* config) {
     return i;
 }
 
-int checkmode(char* mode, char* opt, int linenum) {
+static int checkmode(char* mode, char* opt, int linenum) {
     if (mode == NULL || strlen(mode) == 0) {
         printerr("Syntax error, line %d: Mode field isn't specified.\n",linenum);
         return -1;
@@ -87,7 +87,7 @@ int checkmode(char* mode, char* opt, int linenum) {
     return 0;
 }
 
-int runcmd(char** output, char* command) {
+static int runcmd(char** output, char* command) {
     FILE* result_stream = (FILE*)popen(command,"r");
     if (result_stream == NULL) {
         printerr("Unable to open stream to command \"%s\".\n",command);
@@ -124,7 +124,7 @@ int runcmd(char** output, char* command) {
 }
 
 //Replacement table for most stuff (excludes color,scolor,speed)
-char* replacesrc[] = {
+static char* replacesrc[] = {
     "<left>","<br>","<blink>","</blink>",
     "<small>","<normal>",
     "<wide>","</wide>","<dblwide>","</dblwide>",
@@ -137,7 +137,7 @@ char* replacesrc[] = {
     "&male;","&bottle;","&disk;","&printer;",
     "&note;","&infinity;",0
 };
-char* replacedst[] = {
+static char* replacedst[] = {
     "\x1e" "1","\x0c","\x07" "1","\x07" "0",
     "\x1a" "1","\x1a" "3",
     "\x1d" "01","\x1d" "00","\x1d" "11","\x1d" "10",
@@ -151,8 +151,8 @@ char* replacedst[] = {
     "\xd8","\xd9",0
 };
 
-int COLOR_LEN = 6;
-int parse_color_code(char* out, char* in) {
+#define COLOR_LEN 6 //number of chars in a color
+static int parse_color_code(char* out, char* in) {
     //color mapping: '0'->'00', '1'->'40', '2'->'80', '3'->'C0'
     //ex: '123' -> '4080C0'
     int i;
@@ -180,7 +180,7 @@ int parse_color_code(char* out, char* in) {
     return 0;
 }
 
-int parse_inline_cmds(char** outptr, int* output_is_trimmed, char* in, unsigned int maxout) {
+static int parse_inline_cmds(char** outptr, int* output_is_trimmed, char* in, unsigned int maxout) {
 #ifdef DEBUGMSG
     printf("orig: %s\n",in);
 #endif
@@ -289,9 +289,9 @@ int parse_inline_cmds(char** outptr, int* output_is_trimmed, char* in, unsigned 
 }
 
 //available filename ranges, inclusive: see pg50
-const char filenamepool_firsts[] = {0x20,0x36,0x40,0},
+static const char filenamepool_firsts[] = {0x20,0x36,0x40,0},
     filenamepool_lasts[] = {0x2f,0x3e,0x7e,0};
-char get_next_filename(char prev_filename) {
+static char get_next_filename(char prev_filename) {
     if (prev_filename <= 0) {
         return filenamepool_firsts[0];
     }
@@ -386,29 +386,6 @@ int parsecfg(struct bb_frame** output, FILE* config) {
         } else if (strcmp(cmd,"cmd") == 0) {
 
             char* mode = strtok_r(NULL,delim,&tmp);
-
-            //get number of STRINGs to be made:
-            char* maxsize_str = strtok_r(NULL,delim,&tmp);
-            char* maxsize_str2;
-            errno = 0;
-            int maxsize = strtol(maxsize_str,&maxsize_str2,10);
-            if ((errno != 0 && maxsize == 0) || maxsize_str2 == maxsize_str) {
-                printerr("Error, line %d: Allocation size \"%s\" is not a valid integer.\n",
-                         linenum,maxsize_str);
-                error = 1;
-                break;
-            }
-            if (maxsize > (int)MAX_STRINGFILE_GROUP_SIZE) {
-                printerr("Error, line %d: Allocation size \"%d\" exceeds the maximum size of %d.\n",
-                         linenum,maxsize,MAX_STRINGFILE_GROUP_SIZE);
-                error = 1;
-                break;
-            }
-            int stringcount = maxsize / MAX_STRINGFILE_DATA_SIZE;
-            if (maxsize % MAX_STRINGFILE_DATA_SIZE != 0) {
-                ++stringcount;
-            }
-
             char* command = strtok_r(NULL,delim_endline,&tmp);
             if (checkmode(mode,command,linenum) < 0) {
                 error = 1;
@@ -422,13 +399,13 @@ int parsecfg(struct bb_frame** output, FILE* config) {
             }
             
             //data for the TEXT frame which will reference these STRING frames:
-            char refchar = 0x10;//format for reference is "0x10, filename" (pg55)
-            char* textrefs = (char*)calloc(2*stringcount+1,sizeof(char));
-            textrefs[2*stringcount] = 0;//include \0
+            char refchar = 0x10;//format for each reference is 2 bytes: "0x10, filename" (pg55)
+            char* textrefs = (char*)calloc(2*MAX_STRINGFILE_GROUP_COUNT+1,sizeof(char));//include \0 in size
+            textrefs[2*MAX_STRINGFILE_GROUP_COUNT] = 0;//set \0
 
             //Create and append STRING frames:
             int i, cumulative_parsed = 0;
-            for (i = 0; i < stringcount; i++) {
+            for (i = 0; i < MAX_STRINGFILE_GROUP_COUNT; i++) {
                 *nextframeptr = malloc(sizeof(struct bb_frame));
                 curframe = *nextframeptr;
                 if (head == NULL) {
@@ -441,9 +418,9 @@ int parsecfg(struct bb_frame** output, FILE* config) {
                                                     &raw_result[cumulative_parsed],
                                                     MAX_STRINGFILE_DATA_SIZE);
                 cumulative_parsed += charsparsed;
-                if (is_trimmed && i+1 == stringcount) {
+                if (is_trimmed && i+1 == MAX_STRINGFILE_GROUP_COUNT) {
                     printerr("Warning, line %d: Data has been truncated at input index %d to fit %d available output bytes.\n",
-                             linenum,cumulative_parsed,stringcount*MAX_STRINGFILE_DATA_SIZE);
+                             linenum,cumulative_parsed,MAX_STRINGFILE_GROUP_COUNT*MAX_STRINGFILE_DATA_SIZE);
                     printerr("Input vs output bytecount can vary if you used inline commands in your input.\n");
                 }
 
@@ -504,7 +481,7 @@ int parsecfg(struct bb_frame** output, FILE* config) {
         } else if ((strlen(cmd) >= 2 && cmd[0] == '/' && cmd[1] == '/') ||
                    (strlen(cmd) >= 1 && cmd[0] == '#')) {
 
-            //do nothing
+            //comment in config file, do nothing
 
         } else {
 

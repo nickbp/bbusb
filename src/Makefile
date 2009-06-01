@@ -14,5 +14,11 @@ $(PROG): $(OBJFILES)
 
 all: $(SOURCES) $(PROG)
 
+nousb: CFLAGS := $(CFLAGS) -DDEBUGMSG -DNOUSB
+nousb: all
+
+debug: CFLAGS := $(CFLAGS) -DDEBUGMSG
+debug: all
+
 clean: 
 	rm -f $(OBJFILES) $(PROG)

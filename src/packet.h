@@ -39,6 +39,12 @@ struct bb_frame {
 
 #define NO_SPECIAL 0
 
+#define MIN_TEXTFILE_DATA_SIZE 128
+#define MAX_TEXTFILE_DATA_SIZE 4096 //arbitrary tested-safe limits found by trial and error
+
+#define MAX_STRINGFILE_DATA_SIZE 125 //need to partition text into multiple STRINGs :(
+#define MAX_STRINGFILE_GROUP_COUNT 4 //number of STRINGS allowed in a single message (also by trial and error)
+
 int packet_buildrunseq(char** outputptr, struct bb_frame* frames);
 int packet_buildtext(char** outputptr, char filename,
                      char mode, char special, char* text);

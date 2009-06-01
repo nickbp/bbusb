@@ -33,11 +33,6 @@ typedef void libusb_device_handle;
 #include <libusb-1.0/libusb.h>
 #endif
 
-#define MIN_TEXTFILE_DATA_SIZE 128
-#define MAX_TEXTFILE_DATA_SIZE 4096 //arbitrary tested-safe limits
-#define MAX_STRINGFILE_DATA_SIZE 125 //need to partition text into multiple STRINGs :(
-#define MAX_STRINGFILE_GROUP_SIZE 4*125//sign doesnt want to display more than 4 STRINGs in a TEXT
-
 int hardware_init(libusb_device_handle** devh);
 int hardware_close(libusb_device_handle* devh);
 int hardware_sendpkt(libusb_device_handle* devh, char* data, unsigned int size);
