@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
 '''
-  bbrepeat.py - Runs a command every few minutes, useful for updating
-                a sign without needing a cron job.
+  cmdrepeat.py - Runs a command every few minutes, useful for updating
+                 a sign periodically without needing a cron job.
   Copyright (C) 2009  Nicholas Parker <nickbp@gmail.com>
 
   This program is free software: you can redistribute it and/or modify
@@ -55,6 +55,3 @@ while (True):
         break
     print "%s Waiting %s minutes..." % (time.strftime(timeformat),delay)
     time.sleep(60*delay)
-        
-
-

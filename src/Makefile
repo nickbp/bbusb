@@ -3,7 +3,7 @@ CFLAGS=-c --std=c99 -Wall -Wextra -pedantic -g
 LDFLAGS=-lusb-1.0
 
 PROG=bbusb
-SOURCES=bbusb.c
+SOURCES=config.c hardware.c main.c packet.c
 OBJFILES=$(SOURCES:.c=.o)
 
 $(PROG): $(OBJFILES)

@@ -215,7 +215,7 @@ for i in range(0,len(conditionsset)):
 
 bluecolor = "003"
 redcolor = "300"
-plaincolor = "101"
+plaincolor = "120"
 divider = ", "
 
 printme = ""
@@ -224,17 +224,17 @@ for timelabel in timelabels:
     if mintempdict.has_key(timelabel):
         temp = " <color%s>" % bluecolor + \
             mintempdict[timelabel] + \
-            "<color%s>F" % plaincolor
+            "F<color%s>" % plaincolor
     elif maxtempdict.has_key(timelabel):
         temp = " <color%s>" % redcolor + \
             maxtempdict[timelabel] + \
-            "<color%s>F" % plaincolor
+            "F<color%s>" % plaincolor
 
     conditions = ""
     #if precipdict.has_key(timelabel) and summarydict.has_key(timelabel):
     #    conditions = " ("+precipdict[timelabel]+"% "+summarydict[timelabel]+")"
-    if precipdict.has_key(timelabel) and summarydict.has_key(timelabel):
-        conditions = " ("+summarydict[timelabel]+")"
+    if summarydict.has_key(timelabel):
+        conditions = " <small>("+summarydict[timelabel]+")<normal>"
 
     if temp:
         printme += "%s:%s%s%s" % (timelabel,temp,conditions,divider)
