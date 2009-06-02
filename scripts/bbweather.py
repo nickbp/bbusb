@@ -23,6 +23,8 @@
 import httplib, os, os.path, time, sys
 from xml.dom import minidom
 
+debug = False
+
 def help():
     print "Syntax: %s <zipcode>" % sys.argv[0]
     sys.exit(1)
@@ -117,48 +119,47 @@ weatherdataxml = getXmlData("NDFDgenByDay",soapweatherreq,
 # PARSE WEATHER DATA
 #
 
-#period-name attribute is inconsistent, so just calculate the name ourselves
-def getTimeString(xmlrawtime):
-    #2009-05-28T18:00:00-04:00
-    night_boundary = 16 #technically could be 18:00 but just in case
-    xmltime = time.strptime(xmlrawtime,"%Y-%m-%dT%H:%M:%S-04:00")
-    curtime = time.localtime()
-    if (xmltime.tm_year == curtime.tm_year and
-        xmltime.tm_mon == curtime.tm_mon and
-        xmltime.tm_mday == curtime.tm_mday):
-        if xmltime.tm_hour >= night_boundary:
-            return "Tonight"
-        else:
-            return "Today"
-    else:
-        weekday = time.strftime("%A",xmltime)
-        if xmltime.tm_hour >= night_boundary:
-            weekday = weekday.replace("day","Night")
-        return weekday
-
+def timeIsNight(timeobj):
+    night_boundary = 16 #technically could be 18h but just in case
+    return timeobj.tm_hour >= night_boundary
 
 weatherdata = minidom.parseString(weatherdataxml).getElementsByTagName("data")[0]
 
 #time period names (used as keys by other dicts below)
-perioddict = {} # layout-key : [timename1, timename2, ...]
+perioddict = {} # ordered combination of day and night dicts
 for layoutset in weatherdata.getElementsByTagName("time-layout"):
     #<layout-key>KEY</layout-key>
     keyelem = layoutset.getElementsByTagName("layout-key")[0]
     if not keyelem.childNodes:
         continue
-    key = keyelem.childNodes[0].data
-    if not perioddict.has_key(key):
-        perioddict[key] = []
+    layoutkey = keyelem.childNodes[0].data
     #<start-valid-time period-name="Today">
     for timeelem in layoutset.getElementsByTagName("start-valid-time"):
         if not timeelem.childNodes:
             continue
-        timeval = timeelem.childNodes[0].data
-        perioddict[key].append(getTimeString(timeval))
+        rawtimeval = timeelem.childNodes[0].data
+        #2009-05-28T18:00:00-04:00
+        timeobj = time.strptime(rawtimeval,"%Y-%m-%dT%H:%M:%S-04:00")
 
-#max/min temps
-maxtempdict = {} # timenameN : maxtempF
-mintempdict = {} # timenameN : mintempF
+        curtime = time.localtime()
+        timelabel = ""
+        if (timeobj.tm_year == curtime.tm_year and
+            timeobj.tm_mon == curtime.tm_mon and
+            timeobj.tm_mday == curtime.tm_mday):
+            timelabel = "Today"
+        else:
+            timelabel = time.strftime("%A",timeobj)
+        
+        if not perioddict.has_key(layoutkey):
+            perioddict[layoutkey] = []
+        perioddict[layoutkey].append((timelabel,
+                                      timeIsNight(timeobj)))
+
+if debug:
+    print "period:",perioddict
+
+#max(day)/min(night) temps
+tempdict = {} # timeN : tempF
 for tempset in weatherdata.getElementsByTagName("temperature"):
     #<temperature type="maximum" units="Fahrenheit" time-layout="k-p24h-n3-1">
     temptype = tempset.getAttribute("type")
@@ -167,76 +168,106 @@ for tempset in weatherdata.getElementsByTagName("temperature"):
     tempelems = tempset.getElementsByTagName("value")
     for i in range(0,len(tempelems)):
         tempelem = tempelems[i]
-        #translate layout key + list position of value to period name:
-        periodname = perioddict[layoutkey][i]
         if not tempelem.childNodes:
             continue
         temp = tempelem.childNodes[0].data
-        if temptype == "maximum":
-            maxtempdict[periodname] = temp
-        else:
-            mintempdict[periodname] = temp
+
+        period = perioddict[layoutkey][i]
+        tempdict[period] = temp
+
+if debug:
+    print "temp:",tempdict
 
 #precip percentages
-precipdict = {} # timenameN : probability%
-timelabels = []
+precipdict = {} # timeN : probability%
+timelabels = [] # in-order list of "Today", "Wednesday", etc
 for precipset in weatherdata.getElementsByTagName("probability-of-precipitation"):
     #<probability-of-precipitation type="12 hour" units="percent" time-layout="k-p12h-n6-3">
     layoutkey = precipset.getAttribute("time-layout")
-    timelabels = perioddict[layoutkey]#this happens to be the set of all time labels
+    #the period for precip happens to include all labels, so use it:
+    for period in perioddict[layoutkey]:
+        #skip consecutive duplicates:
+        if not timelabels or timelabels[-1] != period[0]:
+            timelabels.append(period[0])
     #<value>61</value>
     precipelems = precipset.getElementsByTagName("value")
     for i in range(0,len(precipelems)):
         precipelem = precipelems[i]
         #translate layout key + list position of value to period name:
-        periodname = perioddict[layoutkey][i]
+        period = perioddict[layoutkey][i]
         if not precipelem.childNodes:
             continue
-        precipdict[periodname] = precipelem.childNodes[0].data
+        precipdict[period] = precipelem.childNodes[0].data
+
+if debug:
+    print "precip:", precipdict
 
 #weather summaries
-summarydict = {} # timenameN : summarystring
-weather = weatherdata.getElementsByTagName("weather")[0]
-#<weather time-layout="k-p12h-n6-3">
-summarylayoutkey = weather.getAttribute("time-layout")
-conditionsset = weather.getElementsByTagName("weather-conditions")
-for i in range(0,len(conditionsset)):
-    conditions = conditionsset[i]
-    #<weather-conditions weather-summary="Rain Showers">
-    summary = conditions.getAttribute("weather-summary")
-    if not summary == "":
-        #translate layout key + list position of value to period name:
-        periodname = perioddict[summarylayoutkey][i]
-        summarydict[periodname] = summary
+summarydict = {} # timenameN : (summarystring, isFromValueTag)
+for weatherset in  weatherdata.getElementsByTagName("weather"):
+    #<weather time-layout="k-p12h-n6-3">
+    summarylayoutkey = weatherset.getAttribute("time-layout")
+    conditionsset = weatherset.getElementsByTagName("weather-conditions")
+    for i in range(0,len(conditionsset)):
+        conditions = conditionsset[i]
+        #<weather-conditions weather-summary="Chance Rain Showers">
+        #  <value coverage="chance" intensity="light" weather-type="rain showers" qualifier="none"/>
+        #  <value coverage="isolated" intensity="none" additive="and" weather-type="thunderstorms" qualifier="none"/>
+        #</weather-conditions>
+        summaryset = conditions.getElementsByTagName("value")
+        if summaryset and summaryset[0].hasAttribute("weather-type"):
+            summarystr = summaryset[0].getAttribute("weather-type")
+            summary = (" ".join([word.capitalize() for word in summarystr.split()]), True)
+        else:
+            summary = (conditions.getAttribute("weather-summary"), False)
+        if not summary[0] == "":
+            #translate layout key + list position of value to period name:
+            periodname = perioddict[summarylayoutkey][i]
+            summarydict[periodname] = summary
+
+if debug:
+    print "summary:", summarydict
 
 #
 # PRINT PARSED CONTENTS
 #
 
-bluecolor = "003"
-redcolor = "300"
+bluecolor = "002"
+redcolor = "200"
 plaincolor = "120"
 divider = ", "
 
+def getConditionStr(period):
+    returnme = " "
+    if summarydict.has_key(period):
+        returnme += "<small>("
+        if precipdict.has_key(period) and summarydict[period][1]:
+            returnme += precipdict[period]+"% "
+        returnme += summarydict[period][0]+")<normal>"
+    return returnme
+
 printme = ""
 for timelabel in timelabels:
-    temp = ""
-    if mintempdict.has_key(timelabel):
-        temp = " <color%s>" % bluecolor + \
-            mintempdict[timelabel] + \
-            "F<color%s>" % plaincolor
-    elif maxtempdict.has_key(timelabel):
-        temp = " <color%s>" % redcolor + \
-            maxtempdict[timelabel] + \
+    dayperiod = (timelabel,False)
+    nightperiod = (timelabel,True)
+
+    weatherstr = " "
+
+    if tempdict.has_key(dayperiod):
+        weatherstr += "<color%s>" % redcolor + \
+            tempdict[dayperiod] + \
             "F<color%s>" % plaincolor
 
-    conditions = ""
-    #if precipdict.has_key(timelabel) and summarydict.has_key(timelabel):
-    #    conditions = " ("+precipdict[timelabel]+"% "+summarydict[timelabel]+")"
-    if summarydict.has_key(timelabel):
-        conditions = " <small>("+summarydict[timelabel]+")<normal>"
+    if tempdict.has_key(nightperiod):
+        if tempdict.has_key(dayperiod):
+            weatherstr += "/"
+        weatherstr += "<color%s>" % bluecolor + \
+            tempdict[nightperiod] + \
+            "F<color%s>" % plaincolor
 
+    weatherstr += getConditionStr(dayperiod)
+        
     if temp:
-        printme += "%s:%s%s%s" % (timelabel,temp,conditions,divider)
+        printme += "%s:%s%s" % (timelabel,weatherstr,divider)
 
 print "<color%s>" % plaincolor + printme.strip(divider)
