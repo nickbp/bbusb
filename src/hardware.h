@@ -21,21 +21,16 @@
 #ifndef __HARDWARE_H__
 #define __HARDWARE_H__
 
-#include "main.h"
-
-#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
-#ifdef NOUSB
-typedef void libusb_device_handle;
-#else
-#include <libusb-1.0/libusb.h>
-#endif
+#include "usbsign.h"
+#include "common.h"
 
-int hardware_init(libusb_device_handle** devh);
-int hardware_close(libusb_device_handle* devh);
-int hardware_sendpkt(libusb_device_handle* devh, char* data, unsigned int size);
-int hardware_seqstart(libusb_device_handle* devh);
-int hardware_seqend(libusb_device_handle* devh);
+int hardware_init(usbsign_handle** devh);
+int hardware_close(usbsign_handle* devh);
+int hardware_sendpkt(usbsign_handle* devh, char* data, unsigned int size);
+int hardware_seqstart(usbsign_handle* devh);
+int hardware_seqend(usbsign_handle* devh);
+
 #endif

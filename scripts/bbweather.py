@@ -73,7 +73,12 @@ SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
         #conn.set_debuglevel(999)
         conn.request('POST',path,soapreqheader + \
                          soapreqstring + soapreqfooter,headers)
-        file(cachefilename,'w').write(stripSoap(conn.getresponse().read()))
+	resp = conn.getresponse().read()
+        respcontent = stripSoap(resp)
+	if respcontent:
+            file(cachefilename,'w').write(respcontent)
+        else:
+            raise Exception("No/bad data returned for query '" + soapaction + "': " + resp)
 
     return file(cachefilename,'r').read()
 
@@ -97,6 +102,7 @@ try:
     latitude = float(coords[0])
     longitude = float(coords[1])
 except:
+    print sys.exc_info()
     print "Unable to find latitude/longitude. Bad zip code?"
     help()
 

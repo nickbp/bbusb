@@ -35,7 +35,7 @@ struct bb_frame {
     struct bb_frame* next;
 };
 
-#include "hardware.h"
+#include "common.h"
 
 #define NO_SPECIAL 0
 

@@ -1,18 +1,9 @@
 DIRS=src
-CMD=
+COMMANDS=all debug nousb oldusb clean
 
-runcmd:
-	for dir in $(DIRS); do (cd $$dir; $(MAKE) $(CMD)); done
+define runcmd
+ for dir in $(DIRS); do (cd $$dir; $(MAKE) $(1)); done
+endef
 
-# Print debug messages of what's being sent to the sign:
-debug: CMD=debug 
-debug: runcmd
-
-# Create packets, but don't actually send them anywhere (implies debug):
-nousb: CMD=nousb
-nousb: runcmd
-
-all: runcmd
-
-clean: CMD=clean
-clean: runcmd
+$(COMMANDS):
+	$(call runcmd,$@)

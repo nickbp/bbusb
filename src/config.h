@@ -21,13 +21,11 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#include "main.h"
-#include "hardware.h"
+#include "common.h"
 #include "packet.h"
 
 #include <ctype.h>
 #include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>

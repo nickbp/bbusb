@@ -1,7 +1,7 @@
 /************************************************************************\
 
   bbusb - BetaBrite Prism LED Sign Communicator
-  USB communication layer
+  Hardware logic layer
   Copyright (C) 2009  Nicholas Parker <nickbp@gmail.com>
 
   This program is free software: you can redistribute it and/or modify
@@ -22,65 +22,42 @@
 #include "hardware.h"
 
 //Found via lsusb while my sign was plugged in (yes this is real):
-const int vendorid = 0x8765, productid = 0x1234;
+#define SIGN_VENDOR_ID 0x8765
+#define SIGN_PRODUCT_ID 0x1234
+#define SIGN_INTERFACE_NUM 0
+#define SIGN_ENDPOINT_NUM 2
 
 //fixes warnings when being -pedantic:
 struct timespec {
-    time_t tv_sec;        /* seconds */
-    long   tv_nsec;       /* nanoseconds */
+    time_t tv_sec;        // seconds
+    long   tv_nsec;       // nanoseconds
 };
 extern int nanosleep(const struct timespec *req, struct timespec *rem);
 
-int hardware_init(libusb_device_handle** devh) {
-#ifdef NOUSB
-    printf("USB Init %p\n",(void*)*devh);
-    return 0;
-#else
-    if (devh == NULL) {
+int hardware_init(usbsign_handle** devhp) {
+    if (devhp == NULL) {
         printerr("Internal error: Bad pointer to init\n");
         return -1;
-    } else if (*devh != NULL) {
+    } else if (*devhp != NULL) {
         printerr("Internal error: Can't init twice\n");
         return -1;
     }
 
-    int ret = libusb_init(NULL);
+    int ret = usbsign_init();
     if (ret < 0) {
-        printerr("Got error %d when initializing libusb\n", ret);
+        printerr("Got error %d when initializing usb stack\n", ret);
         return ret;
     }
 
-    *devh = libusb_open_device_with_vid_pid(NULL, vendorid, productid);
-    if (*devh == NULL) {
-        printerr("Could not find/open USB device with vid=0x%X pid=0x%X. Is the sign plugged in?\n",
-                vendorid, productid);
-        return -1;
-    }
-
-    ret = libusb_claim_interface(*devh,0);
-    if (ret < 0) {
-        printerr("Could not claim device (%d)\n", ret);
-        return ret;
-    }
-
-    return 0;
-#endif
+    return usbsign_open(SIGN_VENDOR_ID, SIGN_PRODUCT_ID,
+                        SIGN_INTERFACE_NUM, devhp);
 }
 
-int hardware_close(libusb_device_handle* devh) {
-#ifdef NOUSB
-    printf("USB Close %p\n",devh);
-    return 0;
-#else
+int hardware_close(usbsign_handle* devh) {
     if (devh != NULL) {
-        libusb_release_interface(devh, 0);
-        libusb_close(devh);
-        devh = NULL;
+        usbsign_close(devh, SIGN_INTERFACE_NUM);
     }
-    libusb_exit(NULL);
-
     return 0;
-#endif
 }
 
 static void sleep_ms(int ms) {
@@ -95,19 +72,14 @@ const char sequence_header[] = {0,0,0,0,0,1,'Z','0','0'},
     sequence_footer[] = {4},
     packet_header[] = {2}, packet_footer[] = {3};
 
-static int hardware_sendraw(libusb_device_handle* devh, char* data, unsigned int size) {
-#ifdef NOUSB
-    int ret = size;
-#else
+static int hardware_sendraw(usbsign_handle* devh, char* data, unsigned int size) {
     if (devh == NULL) {
         printerr("Unable to send: Device handle is null\n");
         return -1;
     }
 
     int sent;
-    int ret = libusb_bulk_transfer(devh, (2 | LIBUSB_ENDPOINT_OUT),
-                                   (unsigned char*)data, size,
-                                   &sent, 1000);
+    int ret = usbsign_send(devh, SIGN_ENDPOINT_NUM, data, size, &sent);
 
     if (ret < 0) {
         printerr("Got USB error %d when sending %d bytes\n", ret, size);
@@ -115,10 +87,8 @@ static int hardware_sendraw(libusb_device_handle* devh, char* data, unsigned int
     } else {
         ret = sent;
     }
-#endif
 
-    if (ret > 0 || devh != NULL) {
-        //devh test is just to hide 'unused' warning
+    if (ret > 0) {
 #ifdef DEBUGMSG
         //print packet contents:
         unsigned int i;
@@ -136,17 +106,17 @@ static int hardware_sendraw(libusb_device_handle* devh, char* data, unsigned int
     return ret;
 }
 
-int hardware_seqstart(libusb_device_handle* devh) {
+int hardware_seqstart(usbsign_handle* devh) {
     return (hardware_sendraw(devh,(char*)sequence_header,
                              sizeof(sequence_header)) == sizeof(sequence_header));
 }
 
-int hardware_seqend(libusb_device_handle* devh) {
+int hardware_seqend(usbsign_handle* devh) {
     return (hardware_sendraw(devh,(char*)sequence_footer,
                              sizeof(sequence_footer)) == sizeof(sequence_footer));
 }
 
-int hardware_sendpkt(libusb_device_handle* devh, char* data, unsigned int size) {
+int hardware_sendpkt(usbsign_handle* devh, char* data, unsigned int size) {
     //create packet with header/footer chars added:
     char packet[size+sizeof(packet_footer)];
     memcpy(&packet[0],data,size);

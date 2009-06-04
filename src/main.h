@@ -21,18 +21,20 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
+
 //Test without a sign attached:
 //#define NOUSB
+//Use libusb-0.1 instead of libusb-1.0:
+//#define OLDUSB
 //Print generated packets to stdout:
 //#define DEBUGMSG
 
-#include "config.h"
-#include "hardware.h"
-#include "packet.h"
-
-#include <stdio.h>
 #include <string.h>
 
-#define printerr(...) fprintf(stderr,__VA_ARGS__)
+#include "common.h"
+#include "config.h"
+#include "usbsign.h"
+#include "packet.h"
+#include "hardware.h"
 
 #endif

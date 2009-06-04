@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
     }
 
 
-    libusb_device_handle* devh = NULL;
+    usbsign_handle* devh = NULL;
     if (hardware_init(&devh) < 0) {
         printerr("USB init failed: Exiting\n");
         goto end_noclose;

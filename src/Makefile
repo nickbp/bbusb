@@ -1,9 +1,10 @@
 CC=gcc
 CFLAGS=-c --std=c99 -Wall -Wextra -pedantic -g
 LDFLAGS=-lusb-1.0
+OLDLDFLAGS=-lusb
 
 PROG=bbusb
-SOURCES=config.c hardware.c main.c packet.c
+SOURCES=config.c hardware.c main.c packet.c usbsign.c
 OBJFILES=$(SOURCES:.c=.o)
 
 $(PROG): $(OBJFILES)
@@ -19,6 +20,10 @@ nousb: all
 
 debug: CFLAGS := $(CFLAGS) -DDEBUGMSG
 debug: all
+
+oldusb: CFLAGS := $(CFLAGS) -DOLDUSB
+oldusb: LDFLAGS := $(OLDLDFLAGS)
+oldusb: all
 
 clean: 
 	rm -f $(OBJFILES) $(PROG)
