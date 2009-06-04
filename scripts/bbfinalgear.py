@@ -18,7 +18,10 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import time, httplib, os, os.path, sys
+#avoid too-bright and too-dim colors:
+allowedcolors=["002","020","200","011","101","110"]
+
+import httplib, os, os.path, random, sys, time
 from sgmllib import SGMLParser
 
 def get_cached(host,hostpath,cachetimeout):
@@ -106,6 +109,10 @@ for (id,name) in processor.shownames.iteritems():
         else:
             s = "s"
         accu += "Next %s: <wide>%d day%s</wide>%s" % (name,daysleft,s,divider)
+
+sys.stdout.write("<color%s>" % random.choice(allowedcolors))
+sys.stdout.flush()
+
 if accu:
     accu = accu[:-len(divider)]
     print accu

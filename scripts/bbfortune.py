@@ -20,14 +20,14 @@
 
 #safe for work (CHANGE AS DESIRED):
 allowedsets=['kids','love','wisdom','literature','science','humorists']
+ommand = "fortune -s %s" % " ".join(allowedsets)
 
-#avoid too-bright colors:
+#avoid too-bright and too-dim colors:
 allowedcolors=["002","020","200","011","101","110"]
-command = "fortune -s %s" % " ".join(allowedsets)
 
 import subprocess,random,sys,os
 
-sys.stdout.write("<color%s><speed1>" % random.choice(allowedcolors))
+sys.stdout.write("<color%s>" % random.choice(allowedcolors))
 sys.stdout.flush()
 
 proc = subprocess.Popen(command,shell=True,stdout=subprocess.PIPE)
