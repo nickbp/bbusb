@@ -43,12 +43,6 @@ int hardware_init(usbsign_handle** devhp) {
         return -1;
     }
 
-    int ret = usbsign_init();
-    if (ret < 0) {
-        printerr("Got error %d when initializing usb stack\n", ret);
-        return ret;
-    }
-
     return usbsign_open(SIGN_VENDOR_ID, SIGN_PRODUCT_ID,
                         SIGN_INTERFACE_NUM, devhp);
 }
@@ -73,11 +67,6 @@ const char sequence_header[] = {0,0,0,0,0,1,'Z','0','0'},
     packet_header[] = {2}, packet_footer[] = {3};
 
 static int hardware_sendraw(usbsign_handle* devh, char* data, unsigned int size) {
-    if (devh == NULL) {
-        printerr("Unable to send: Device handle is null\n");
-        return -1;
-    }
-
     int sent;
     int ret = usbsign_send(devh, SIGN_ENDPOINT_NUM, data, size, &sent);
 

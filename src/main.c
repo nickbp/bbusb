@@ -71,6 +71,13 @@ static void help(char* appname) {
     printerr("  &note; &infinity;\n");
 }
 
+static void version(void) {
+    printerr("bbusb %s (%s)\n",VERSION,USBTYPE);
+    printerr("Copyright (C) 2009 Nicholas Parker <nickbp@gmail.com>\n");
+    printerr("License GPLv3+: GNU GPL version 3 or later\n");
+    printerr("This program comes with ABSOLUTELY NO WARRANTY.\n");
+}
+
 int main(int argc, char* argv[]) {
     //Parse commandline for initflag/config:
     int do_init, error = -1;
@@ -80,6 +87,10 @@ int main(int argc, char* argv[]) {
             do_init = 1;
         } else if (strcmp(argv[1],"-u") == 0) {
             do_init = 0;
+        } else if (strcmp(argv[1],"-v") == 0 ||
+                   strcmp(argv[1],"--version") == 0) {
+            version();
+            return -1;
         } else {
             help(argv[0]);
             return -1;

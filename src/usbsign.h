@@ -44,7 +44,6 @@ typedef libusb_device_handle usbsign_handle;
 #endif
 #endif
 
-int usbsign_init(void);
 int usbsign_open(int vendorid, int productid, 
                  int interface, usbsign_handle** devh);
 void usbsign_close(usbsign_handle* dev, int interface);

@@ -21,23 +21,6 @@
 
 #include "usbsign.h"
 
-int usbsign_init(void) {
-#ifdef NOUSB
-    printf("USB Init\n");
-    return 0;
-#else
-#ifdef OLDUSB
-    usb_init();
-    usb_find_busses();
-    usb_find_devices();
-
-    return 0;
-#else
-    return libusb_init(NULL);
-#endif
-#endif
-}
-
 int usbsign_open(int vendorid, int productid,
                  int interface, usbsign_handle** dev) {
 #ifdef NOUSB
@@ -46,12 +29,20 @@ int usbsign_open(int vendorid, int productid,
 #else
 
 #ifdef OLDUSB
+    usb_init();
+    usb_find_busses();
+    usb_find_devices();
+
     struct usb_bus* bus;
     struct usb_device* usbdev;
     int found = 0;
 
     for (bus = usb_get_busses(); bus; bus = bus->next) {
+        //printf("BUS: %s\n",bus->dirname);
         for (usbdev = bus->devices; usbdev; usbdev = usbdev->next) {
+            struct usb_device_descriptor *desc = &(usbdev->descriptor);
+            //printf("    Device: %s\n", usbdev->filename);
+            //printf("        %x:%x\n",desc->idVendor,desc->idProduct);
             if (usbdev->descriptor.idVendor == vendorid &&
                 usbdev->descriptor.idProduct == productid) {
                 found = 1;
@@ -62,9 +53,18 @@ int usbsign_open(int vendorid, int productid,
             break;
         }
     }
-
-    *dev = usb_open(usbdev);
+    if (found > 0) {
+        *dev = usb_open(usbdev);
+    } else {
+        *dev = NULL;
+    }
 #else
+    int ret = libusb_init(NULL);
+    if (ret < 0) {
+        printerr("Got error %d when initializing usb stack\n", ret);
+        return ret;
+    }
+
     *dev = libusb_open_device_with_vid_pid(NULL, vendorid, productid);
 #endif
     if (*dev == NULL) {
@@ -76,7 +76,7 @@ int usbsign_open(int vendorid, int productid,
 #ifdef OLDUSB
     int ret = usb_claim_interface(*dev, interface);
 #else
-    int ret = libusb_claim_interface(*dev, interface);
+    ret = libusb_claim_interface(*dev, interface);
 #endif
     if (ret < 0) {
         printerr("Could not claim device (%d)\n", ret);
@@ -112,6 +112,10 @@ int usbsign_send(usbsign_handle* dev, int endpoint,
            size,data,dev,endpoint);
     return 0;
 #else
+    if (dev == NULL) {
+        printerr("Unable to send: Device handle is null\n");
+        return -1;
+    }
 #ifdef OLDUSB
     int ret = usb_bulk_write(dev, endpoint, data, size, 1000);
     if (ret >= 0) {

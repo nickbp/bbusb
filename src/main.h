@@ -29,6 +29,18 @@
 //Print generated packets to stdout:
 //#define DEBUGMSG
 
+#define VERSION "0.1"
+
+#ifdef NOUSB
+#define USBTYPE "nousb"
+#else
+#ifdef OLDUSB
+#define USBTYPE "libusb-0.1"
+#else
+#define USBTYPE "libusb-1.0"
+#endif
+#endif
+
 #include <string.h>
 
 #include "common.h"
