@@ -21,6 +21,40 @@
 
 #include "packet.h"
 
+//available filename ranges, inclusive: see pg50
+//static const char filenamepool_firsts[] = {0x20,0x36,0x40,0},
+//    filenamepool_lasts[] = {0x2f,0x3e,0x7e,0};
+//NOTE: my sign will fail if I use more than 46 filenames,
+// so only allow that many filenames in the pool:
+#define MAX_LABEL_COUNT 46
+static const char filenamepool_firsts[] = {0x20,0x36,0x40,0},
+    filenamepool_lasts[] = {0x2f,0x3e,0x54,0};//stop at "T" to enforce max 46 names
+
+char packet_next_filename(char prev_filename) {
+    if (prev_filename <= 0) {
+        return filenamepool_firsts[0];
+    }
+    int i = 0;
+    while (filenamepool_firsts[i] != 0) {
+        if (prev_filename < filenamepool_lasts[i]) {
+            if (prev_filename >= filenamepool_firsts[i]) {
+                //return value within this range
+                return prev_filename+1;
+            } else {
+                //last is before this range, return start of this range
+                return filenamepool_firsts[i];
+            }
+        }
+        //skip to next range
+        ++i;
+    }
+    //reached end of pool, give up
+    printerr("Too many messages in config file (ran out of message labels).\n");
+    printerr("Max %d labels: cmds cost %d labels each, txts cost 1 label each.\n", MAX_LABEL_COUNT, MAX_STRINGFILE_GROUP_COUNT+1);
+    printerr("In your config file, reduce the total number of messages, or convert some cmds to txts to save space.\n");
+    return -1;
+}
+
 int packet_buildmemconf(char** outputptr, struct bb_frame* frames) {
     //MEMCONFIG packet format:
     //0x0 0x0 0x0 0x0 0x0 0x1 Z 0x0 0x0 0x2 E $ filespec [filespec ...] 0x4

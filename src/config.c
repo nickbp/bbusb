@@ -288,33 +288,6 @@ static int parse_inline_cmds(char** outptr, int* output_is_trimmed, char* in, un
     return iin;//tell caller how far we got through their data
 }
 
-//available filename ranges, inclusive: see pg50
-static const char filenamepool_firsts[] = {0x20,0x36,0x40,0},
-    filenamepool_lasts[] = {0x2f,0x3e,0x7e,0};
-static char get_next_filename(char prev_filename) {
-    if (prev_filename <= 0) {
-        return filenamepool_firsts[0];
-    }
-    int i = 0;
-    while (filenamepool_firsts[i] != 0) {
-        if (prev_filename < filenamepool_lasts[i]) {
-            if (prev_filename >= filenamepool_firsts[i]) {
-                //return value within this range
-                return prev_filename+1;
-            } else {
-                //last is before this range, return start of this range
-                return filenamepool_firsts[i];
-            }
-        }
-        //skip to next range
-        ++i;
-    }
-    //reached end of pool, give up
-    printerr("Ran out of message labels in available pool.\n");
-    printerr("In your config, reduce the total number of messages or the size allocated for cmd messages.\n");
-    return -1;
-}
-
 int parsecfg(struct bb_frame** output, FILE* config) {
     int error = 0, linenum = 0;
     char filename = 0;
@@ -348,6 +321,7 @@ int parsecfg(struct bb_frame** output, FILE* config) {
 
             *nextframeptr = malloc(sizeof(struct bb_frame));
             curframe = *nextframeptr;
+            curframe->next = NULL;
 
             curframe->mode = tolower(mode[0]);
             if (strlen(mode) > 1) {
@@ -373,14 +347,13 @@ int parsecfg(struct bb_frame** output, FILE* config) {
 
             curframe->frame_type = TEXT_FRAME_TYPE;
 
-            filename = get_next_filename(filename);
+            filename = packet_next_filename(filename);
             if (filename <= 0) {
                 error = 1;
                 break;
             }
             curframe->filename = filename;
 
-            curframe->next = NULL;
             nextframeptr = &curframe->next;
 
         } else if (strcmp(cmd,"cmd") == 0) {
@@ -408,6 +381,7 @@ int parsecfg(struct bb_frame** output, FILE* config) {
             for (i = 0; i < MAX_STRINGFILE_GROUP_COUNT; i++) {
                 *nextframeptr = malloc(sizeof(struct bb_frame));
                 curframe = *nextframeptr;
+                curframe->next = NULL;
                 if (head == NULL) {
                     head = curframe;
                 }
@@ -423,7 +397,7 @@ int parsecfg(struct bb_frame** output, FILE* config) {
                              linenum,cumulative_parsed,MAX_STRINGFILE_GROUP_COUNT*MAX_STRINGFILE_DATA_SIZE);
                     printerr("Input vs output bytecount can vary if you used inline commands in your input.\n");
                 }
-
+                
                 curframe->data = malloc(MAX_STRINGFILE_DATA_SIZE+1);
                 strncpy(curframe->data,parsed_result,
                         MAX_STRINGFILE_DATA_SIZE);
@@ -433,7 +407,7 @@ int parsecfg(struct bb_frame** output, FILE* config) {
                 printf(">%d %s\n",i,curframe->data);
 #endif
 
-                filename = get_next_filename(filename);
+                filename = packet_next_filename(filename);
                 if (filename <= 0) {
                     error = 1;
                     break;
@@ -445,7 +419,6 @@ int parsecfg(struct bb_frame** output, FILE* config) {
 
                 curframe->frame_type = STRING_FRAME_TYPE;
 
-                curframe->next = NULL;
                 nextframeptr = &curframe->next;
             }
             free(raw_result);
@@ -456,6 +429,7 @@ int parsecfg(struct bb_frame** output, FILE* config) {
             //Append TEXT frame containing references to those STRINGs:
             *nextframeptr = malloc(sizeof(struct bb_frame));
             curframe = *nextframeptr;
+            curframe->next = NULL;
 
             curframe->mode = mode[0];
             if (strlen(mode) > 1) {
@@ -468,14 +442,13 @@ int parsecfg(struct bb_frame** output, FILE* config) {
 
             curframe->frame_type = TEXT_FRAME_TYPE;
 
-            filename = get_next_filename(filename);
+            filename = packet_next_filename(filename);
             if (filename <= 0) {
                 error = 1;
                 break;
             }
             curframe->filename = filename;
 
-            curframe->next = NULL;
             nextframeptr = &curframe->next;
 
         } else if ((strlen(cmd) >= 2 && cmd[0] == '/' && cmd[1] == '/') ||

@@ -45,6 +45,8 @@ struct bb_frame {
 #define MAX_STRINGFILE_DATA_SIZE 125 //need to partition text into multiple STRINGs :(
 #define MAX_STRINGFILE_GROUP_COUNT 4 //number of STRINGS allowed in a single message (also by trial and error)
 
+char packet_next_filename(char prev_filename);
+
 int packet_buildrunseq(char** outputptr, struct bb_frame* frames);
 int packet_buildtext(char** outputptr, char filename,
                      char mode, char special, char* text);

@@ -71,6 +71,11 @@ static void help(char* appname) {
     printerr("  &note; &infinity;\n");
 }
 
+static void mini_help(char* appname) {
+    printerr("Run \"%s -h\" for help.\n",appname);
+}
+
+
 static void version(void) {
     printerr("bbusb %s (%s)\n",VERSION,USBTYPE);
     printerr("Copyright (C) 2009 Nicholas Parker <nickbp@gmail.com>\n");
@@ -81,7 +86,8 @@ static void version(void) {
 int main(int argc, char* argv[]) {
     //Parse commandline for initflag/config:
     int do_init, error = -1;
-    FILE* config;
+    char* configpath = NULL;
+    FILE* configfile;
     if (argc > 1) {
         if (strcmp(argv[1],"-i") == 0) {
             do_init = 1;
@@ -91,48 +97,64 @@ int main(int argc, char* argv[]) {
                    strcmp(argv[1],"--version") == 0) {
             version();
             return -1;
-        } else {
+        } else if (strcmp(argv[1],"-h") == 0 ||
+                   strcmp(argv[1],"--help") == 0) {
             help(argv[0]);
+            return -1;
+        } else {
+            printerr("Unknown flag \"%s\". ",argv[1]);
+            mini_help(argv[0]);
             return -1;
         }
 
         if (argc > 2) {
-            config = fopen(argv[2],"r");
-            if (config == NULL) {
-                printerr("Config file \"%s\" not found.\n",argv[2]);
-                help(argv[0]);
+            configpath = argv[2];
+            configfile = fopen(configpath,"r");
+            if (configfile == NULL) {
+                printerr("Config file \"%s\" not found. ",configpath);
+                mini_help(argv[0]);
                 return -1;
             }
         } else {
-            config = stdin;
+            configfile = stdin;
         }
     } else {
-        help(argv[0]);
+        mini_help(argv[0]);
         return -1;
     }
+    
+    if (configpath == NULL) {
+        configpath = "<stdin>";
+    }
+    printf("Parsing config file %s\n",configpath);
 
     //Get and parse bb_frames (both STRINGs and TEXTs) from config:
     struct bb_frame* startframe = NULL;
-    if (parsecfg(&startframe,config) < 0) {
-        fclose(config);
-        help(argv[0]);
+    if (parsecfg(&startframe,configfile) < 0) {
+        fclose(configfile);
+        printerr("Error encountered when parsing config file. ");
+        mini_help(argv[0]);
         goto end_noclose;
     }
-    fclose(config);
+    fclose(configfile);
     if (startframe == NULL) {
-        printerr("Empty config file, nothing to do.\n");
+        printerr("Empty config file, nothing to do. ");
+        mini_help(argv[0]);
         goto end_noclose;
     }
 
 
     usbsign_handle* devh = NULL;
     if (hardware_init(&devh) < 0) {
-        printerr("USB init failed: Exiting\n");
+        printerr("USB init failed: Exiting. ");
+        mini_help(argv[0]);
         goto end_noclose;
     }
 
     char* packet = NULL;
     int pktsize;
+    
+    printf("Writing to sign\n");
 
     //send sequence header before we start sending packets
     if (!hardware_seqstart(devh)) {

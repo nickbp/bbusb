@@ -21,7 +21,7 @@
 
 #include "hardware.h"
 
-//Found via lsusb while my sign was plugged in (yes this is real):
+//Found via lsusb while my Prism sign was plugged in:
 #define SIGN_VENDOR_ID 0x8765
 #define SIGN_PRODUCT_ID 0x1234
 #define SIGN_INTERFACE_NUM 0
