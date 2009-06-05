@@ -19,8 +19,15 @@
 '''
 
 #safe for work (CHANGE AS DESIRED):
-allowedsets=['kids','love','wisdom','literature','science','humorists']
-ommand = "fortune -s %s" % " ".join(allowedsets)
+allowedsets=[
+    'education','pets','people',
+    'work','love','platitudes','kids',
+    'riddles','art','perl','linux',
+    'paradoxum','songs-poems','wisdom',
+    'law','politics','literature','science',
+    'computers','humorists','miscellaneous',
+    'definitions']
+command = "fortune -s %s" % " ".join(allowedsets)
 
 #avoid too-bright and too-dim colors:
 allowedcolors=["002","020","200","011","101","110"]

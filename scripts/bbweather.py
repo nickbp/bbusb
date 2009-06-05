@@ -246,10 +246,11 @@ divider = ", "
 def getConditionStr(period):
     returnme = " "
     if summarydict.has_key(period):
-        returnme += "<small>("
+        #returnme += "<small>("
         if precipdict.has_key(period) and summarydict[period][1]:
             returnme += precipdict[period]+"% "
-        returnme += summarydict[period][0]+")<normal>"
+        #returnme += summarydict[period][0]+")<normal>"
+        returnme += summarydict[period][0]
     return returnme
 
 printme = ""
@@ -271,6 +272,7 @@ for timelabel in timelabels:
             tempdict[nightperiod] + \
             "F<color%s>" % plaincolor
 
+    # only display the daytime weather conditions, ignore nighttime conditions
     weatherstr += getConditionStr(dayperiod)
         
     if temp:
