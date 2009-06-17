@@ -51,7 +51,7 @@ static void help(char* appname) {
     printerr("\n Inline Text Format Syntax (pg81-82):\n");
     printerr("  <left> -- Left-align the text in this frame. Only works in some frame modes (eg \"hold\")\n");
     printerr("  <speedN> -- Set frame display speed. speed1 = slowest, speed6 = fastest.\n");
-    printerr("  <br> -- Start of next display frame (allows multiple frames in one line).\n");
+    printerr("  <br> -- Start of next display frame (allows multiple frames in one command).\n");
     printerr("  <blink>,</blink> -- Enable/disable blinking text. Only works in some frame modes (eg \"hold\").\n");
     printerr("  <small> -- Switch to a smaller font.\n");
     printerr("  <normal> -- Switch back to normal size.\n");
@@ -59,16 +59,16 @@ static void help(char* appname) {
     printerr("  <dblwide>,</dblwide> -- Widen the text more.\n");
     printerr("  <serif>,</serif> -- Switch to a serif font.\n");
     printerr("  <shadow>,</shadow> -- Apply a shadow to the text.\n");
-    printerr("  <colorRGB> -- Change the text foreground color. R,G,B may each be any number between 0 and 3 (ex: \"color303\" for purple)\n");
+    printerr("  <colorRGB> -- Change the text foreground color. R,G,B may each be any number between 0 and 3 (eg <color303> for bright purple, <color101> for dim purple)\n");
     printerr("  <scolorRGB> -- Change the text shadow color (for text with <shadow> applied). Uses same RGB codes as <colorRGB>.\n");
     printerr("\n Some Special Character Entities (pg84-87):\n");
     printerr("  &uparrow; &downarrow; &leftarrow; &rightarrow;\n");
     printerr("  &cent; &gbp; &yen; &euro;\n");
-    printerr("  &pacman; &boat; &ball; &phone;\n");
-    printerr("  &heart; &car; &handicap; &rhino;\n");
-    printerr("  &mug; &satdish; &copy; &male;\n");
-    printerr("  &female; &bottle; &disk; &printer;\n");
-    printerr("  &note; &infinity;\n");
+    printerr("  &disk; &printer; &phone; &satdish;\n");
+    printerr("  &car; &boat; &male; &female;\n");
+    printerr("  &heart; &pacman; &ball; &note;\n");
+    printerr("  &mug; &bottle; &handicap; &copy;\n");
+    printerr("  &rhino; &infinity;\n");
 }
 
 static void mini_help(char* appname) {

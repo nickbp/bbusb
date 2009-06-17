@@ -53,5 +53,19 @@ while (True):
     else:
         print "%s Command failed (return code %s)" % (time.strftime(timeformat),ret)
         break
-    print "%s Waiting %s minutes..." % (time.strftime(timeformat),delay)
-    time.sleep(60*delay)
+
+    countdown = delay*60
+    origlen = len(str(countdown))
+    sys.stdout.write("Waiting %s minutes... %s" % (delay,countdown))
+    sys.stdout.flush()
+    while (countdown > 0):
+        time.sleep(1)
+        #erase previous number
+        sys.stdout.write("\b" * origlen)
+        countdown -= 1
+        #left-indent as needed
+        fill = " "*(origlen-len(str(countdown)))
+        #write new number and flush
+        sys.stdout.write(fill+str(countdown))
+        sys.stdout.flush()
+    print
