@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 '''
   bbrss.py - Prints a single random article from a specified RSS feed
@@ -90,5 +91,7 @@ textcolor = textcolors[randindex]
 entrytitle = entry['title']
 entrycontent = striphtmltags.sub('', entry['description']).strip()
 
-print "<color%s><scolor%s><shadow>%s</shadow>: <color%s>%s" % \
+#separate print avoids crashing if weird chars encountered (dunno why?)
+out = "<color%s><scolor%s><shadow>%s</shadow>: <color%s>%s" % \
     (headlinecolor, textcolor, entrytitle, textcolor, entrycontent)
+print out
