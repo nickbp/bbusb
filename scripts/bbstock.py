@@ -21,37 +21,32 @@
 
 import csv, httplib, sys, os, time
 
-#MUST MATCH ALLSTOCKS:
-stocksetnames = {
-    "index":"US Indices",
-    "intlindex":"Intl Indices",
-    "treasuries":"Treasuries",
-    "bignames":"Software",
-    "neighbors":"Neighbors",
-    "vendors":"Vendors"
-}
-
-#MUST MATCH STOCKSETNAMES:
+#each set has the name for the set,
+#followed by the set's symbols and their labels:
 allstocks = {
     "index":[
+        "US Indices",
         ["^GSPC","S&P500"],
-        ["^W4500","Wilshire4500"],
+        ["^W5000","Wilshire5000"],
         ["^DJI","Dow Ind."],
         ["^IXIC","NASDAQ"],
         ],
     "intlindex":[
+        "Intl Indices",
         ["^HSI","HangSeng<small>(HK)<normal>"],
         ["^N225","Nikkei225<small>(JP)<normal>"],
         ["^FTSE","FTSE100<small>(UK)<normal>"],
         ["^GDAXI","DAX<small>(DE)<normal>"]
         ],
     "treasuries":[
+        "Treasuries",
         ["^IRX","13wk T-Bill"],
         ["^FVX","5yr T-Bill"],
         ["^TNX","10yr T-Bill"],
         ["^TYX","30yr T-Bill"]
         ],
     "bignames":[
+        "Software",
         ["AVID","Avid"],
         ["GOOG","Google"],
         ["IBM","IBM"],
@@ -60,23 +55,13 @@ allstocks = {
         ["ADBE","Adobe"]
         ],
     "neighbors":[
+        "Neighbors",
         ["NTAP","NetApp"],
         ["ISLN","Isilon"],
-        ["VMW","VMWare"],
         ["JNPR","Juniper"],
         ["AKAM","Akamai"],
         ["ORCL","Oracle"],
-        ["SAP","SAP"],
         ["EMC","EMC"]
-        ],
-    "vendors":[
-        ["DELL","Dell"],
-        ["HPQ","HP"],
-        ["CSCO","Cisco"],
-        ["BRCM","Broadcom"],
-        ["SNDK","SanDisk"],
-        ["INTC","Intel"],
-        ["NVDA","NVIDIA"]
         ]
 }
 
@@ -178,9 +163,10 @@ Types: %s\n""" % (sys.argv[0],", ".join(allstocks.keys())))
     sys.exit(1)
 
 key = " ".join(sys.argv[1:])
-stocksymbols = [stock[0] for stock in allstocks[key]]
+stocksymbols = [stock[0] for stock in allstocks[key][1:]]
+setname = allstocks[key][0]
 stocknames = {}
-for stock in allstocks[key]:
+for stock in allstocks[key][1:]:
     stocknames[stock[0]] = stock[1]
 
 # Request data:
@@ -229,16 +215,21 @@ def stockpricelowhigh(lowval,highval,curval):
     highpctchange = curval/highval - 1
     lowout = "<color%s>%+.0f%%" % (redcolor, lowpctchange*100)
     highout = "<color%s>%+.0f%%" % (greencolor, highpctchange*100)
-    return "(%s%s<color%s>)" % (lowout, highout, plaincolor)
+    return "(52W:%s%s<color%s>)" % (lowout, highout, plaincolor)
 
 def stockprice(stock,showminmax=False):
-    change = float(stock["Change"])
     name = stocknames.get(stock["Symbol"],stock["Symbol"])
     price = float(stock["Last Trade (Price Only)"])
-    if change < 0:
-        change = "<color%s>&downarrow;<color%s>%.02f" % (redcolor,plaincolor,abs(change))
+    changeval = float(stock["Change"])
+    #if changeval < 0:
+    #    change = "<color%s>&downarrow;<color%s>%.02f" % (redcolor,plaincolor,abs(changeval))
+    #else:
+    #    change = "<color%s>&uparrow;<color%s>%.02f" % (greencolor,plaincolor,changeval)
+    changepct = ((price+changeval)/price - 1) * 100
+    if changepct < 0:
+        change = "<color%s>&downarrow;<color%s>%.01f%%" % (redcolor,plaincolor,abs(changepct))
     else:
-        change = "<color%s>&uparrow;<color%s>%.02f" % (greencolor,plaincolor,change)
+        change = "<color%s>&uparrow;<color%s>%.01f%%" % (greencolor,plaincolor,changepct)
     if showminmax:
         change += stockpricelowhigh(float(stock["52-week Low"]),
                                     float(stock["52-week High"]),
@@ -251,4 +242,4 @@ for line in reader:
 out = ""
 for stocksymbol in stocksymbols:
     out += stockprice(vals[stocksymbol],True) + divider
-print "<color%s>%s: %s" % (plaincolor, stocksetnames[key], out[:-len(divider)])
+print "<color%s>%s: %s" % (plaincolor, setname, out[:-len(divider)])
