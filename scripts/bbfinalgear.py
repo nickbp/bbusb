@@ -108,7 +108,7 @@ for (id,name) in processor.shownames.iteritems():
         hoursleft = timediff / 3600
         daysleft = hoursleft / 24
 
-	if daysleft > -1 and daysleft < 1:
+        if daysleft > -1 and daysleft < 1:
             timeleft = "%d hours" % hoursleft
         elif daysleft >= 1 and daysleft < 2:
             timeleft = "%d day" % daysleft
