@@ -215,7 +215,7 @@ def stockpricelowhigh(lowval,highval,curval):
     highpctchange = curval/highval - 1
     lowout = "<color%s>%+.0f%%" % (redcolor, lowpctchange*100)
     highout = "<color%s>%+.0f%%" % (greencolor, highpctchange*100)
-    return "(52W:%s%s<color%s>)" % (lowout, highout, plaincolor)
+    return " (52W %s%s<color%s>)" % (lowout, highout, plaincolor)
 
 def stockprice(stock,showminmax=False):
     name = stocknames.get(stock["Symbol"],stock["Symbol"])

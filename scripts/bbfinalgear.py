@@ -21,7 +21,7 @@
 #avoid too-bright and too-dim colors:
 allowedcolors=["002","020","200","011","101","110"]
 
-import httplib, os, os.path, random, sys, time
+import httplib, os, os.path, random, sys, time, calendar
 from sgmllib import SGMLParser
 
 def get_cached(host,hostpath,cachetimeout):
@@ -96,25 +96,31 @@ processor.close()
 
 accu = ""
 format = "%Y-%m-%d %H:%M:%S GMT+00:00"
-today = time.gmtime().tm_yday
 
 divider = ", "
 for (id,name) in processor.shownames.iteritems():
     if processor.showtimes.has_key(id):
         time_s = processor.showtimes[id]
-        timef = time.strptime(time_s,format)
-        daysleft = timef.tm_yday - today
-        if daysleft == 1:
-            s = ""
+        showsecs = calendar.timegm(time.strptime(time_s,format))
+        cursecs = time.time()
+
+        timediff = showsecs - cursecs
+        hoursleft = timediff / 3600
+        daysleft = hoursleft / 24
+
+	if daysleft > -1 and daysleft < 1:
+            timeleft = "%d hours" % hoursleft
+        elif daysleft >= 1 and daysleft < 2:
+            timeleft = "%d day" % daysleft
         else:
-            s = "s"
-        accu += "Next %s: <wide>%d day%s</wide>%s" % (name,daysleft,s,divider)
+            timeleft = "%d days" % daysleft
+        accu += "Next %s: <wide>%s</wide>%s" % (name,timeleft,divider)
 
 sys.stdout.write("<color%s>" % random.choice(allowedcolors))
 sys.stdout.flush()
 
 if accu:
-    accu = accu[:-len(divider)]
-    print accu
+    #strip last divider before printing
+    print accu[:-len(divider)]
 else:
     print "No Final Gear Countdown data found."
