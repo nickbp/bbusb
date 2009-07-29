@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
     if (configpath == NULL) {
         configpath = "<stdin>";
     }
-    printf("Parsing config file %s\n",configpath);
+    printf("Parsing %s\n",configpath);
 
     //Get and parse bb_frames (both STRINGs and TEXTs) from config:
     struct bb_frame* startframe = NULL;

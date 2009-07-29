@@ -91,7 +91,7 @@ textcolor = textcolors[randindex]
 entrytitle = entry['title']
 entrycontent = striphtmltags.sub('', entry['description']).strip()
 
-#separate print avoids crashing if weird chars encountered (dunno why?)
+#avoid crashing on utf characters:
 out = "<color%s><scolor%s><shadow>%s</shadow>: <color%s>%s" % \
     (headlinecolor, textcolor, entrytitle, textcolor, entrycontent)
-print out
+print unicode(out).encode("utf-8")
