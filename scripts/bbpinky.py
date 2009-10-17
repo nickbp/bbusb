@@ -24,7 +24,7 @@
 
 import random, sys, os.path
 
-quotefilename = "cclist.txt"
+quotefilename = "pinkylist.txt"
 quotefile = os.path.join(os.path.dirname(sys.argv[0]),quotefilename)
 
 try:
@@ -43,7 +43,7 @@ randindex = random.randint(0, len(headlinecolors)-1)
 headlinecolor = headlinecolors[randindex]
 textcolor = textcolors[randindex]
 
-message = random.choice(lines).strip()
+(question,answer) = random.choice(lines).strip().split("\t")
 
-print "<color%s><scolor%s><shadow>Charlie Chan say,</shadow> <color%s>%s" % \
-    (headlinecolor, textcolor, textcolor, message)
+print "<color%s><scolor%s><shadow>%s</shadow> <color%s>%s" % \
+    (headlinecolor, textcolor, question, textcolor, answer)
