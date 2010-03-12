@@ -145,7 +145,7 @@ for layoutset in weatherdata.getElementsByTagName("time-layout"):
             continue
         rawtimeval = timeelem.childNodes[0].data
         #2009-05-28T18:00:00-04:00
-        timeobj = time.strptime(rawtimeval,"%Y-%m-%dT%H:%M:%S-04:00")
+        timeobj = time.strptime(rawtimeval.rsplit("-",1)[0],"%Y-%m-%dT%H:%M:%S")
 
         curtime = time.localtime()
         timelabel = ""

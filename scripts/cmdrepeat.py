@@ -52,7 +52,6 @@ while (True):
         print "%s Command successful (return code %s)" % (time.strftime(timeformat),ret)
     else:
         print "%s Command failed (return code %s)" % (time.strftime(timeformat),ret)
-        break
 
     countdown = delay*60
     origlen = len(str(countdown))
