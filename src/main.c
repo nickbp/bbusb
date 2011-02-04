@@ -49,18 +49,22 @@ static void help(char* appname) {
     printerr("  m scroll \tn6 spray \tnz smile\n");
     printerr("  o automode \tn7 starburst\n");
     printerr("\n Inline Text Format Syntax (pg81-82):\n");
-    printerr("  <left> -- Left-align the text in this frame. Only works in some frame modes (eg \"hold\")\n");
+    printerr("  <left> -- Left-align the text in this frame.\n");
+    printerr("            Only works in some frame modes (eg \"hold\")\n");
     printerr("  <speedN> -- Set frame display speed. speed1 = slowest, speed6 = fastest.\n");
     printerr("  <br> -- Start of next display frame (allows multiple frames in one command).\n");
-    printerr("  <blink>,</blink> -- Enable/disable blinking text. Only works in some frame modes (eg \"hold\").\n");
+    printerr("  <blink>,</blink> -- Enable/disable blinking text.\n");
+    printerr("                      Only works in some frame modes (eg \"hold\").\n");
     printerr("  <small> -- Switch to a smaller font.\n");
     printerr("  <normal> -- Switch back to normal size.\n");
     printerr("  <wide>,</wide> -- Widen the text.\n");
     printerr("  <dblwide>,</dblwide> -- Widen the text more.\n");
     printerr("  <serif>,</serif> -- Switch to a serif font.\n");
     printerr("  <shadow>,</shadow> -- Apply a shadow to the text.\n");
-    printerr("  <colorRGB> -- Change the text foreground color. R,G,B may each be any number between 0 and 3 (eg <color303> for bright purple, <color101> for dim purple)\n");
-    printerr("  <scolorRGB> -- Change the text shadow color (for text with <shadow> applied). Uses same RGB codes as <colorRGB>.\n");
+    printerr("  <colorRGB> -- Change the text foreground color. R,G,B may each be any number between 0 and 3\n");
+    printerr("                Examples: <color303> for bright purple, <color101> for dim purple.\n");
+    printerr("  <scolorRGB> -- Change the text shadow color (for text with <shadow> applied).\n");
+    printerr("                 Uses same RGB codes as <colorRGB>.\n");
     printerr("\n Some Special Character Entities (pg84-87):\n");
     printerr("  &uparrow; &downarrow; &leftarrow; &rightarrow;\n");
     printerr("  &cent; &gbp; &yen; &euro;\n");
@@ -78,7 +82,7 @@ static void mini_help(char* appname) {
 
 static void version(void) {
     printerr("bbusb %s (%s)\n",VERSION,USBTYPE);
-    printerr("Copyright (C) 2009 Nicholas Parker <nickbp@gmail.com>\n");
+    printerr("Copyright (C) 2009-2011 Nicholas Parker <nickbp@gmail.com>\n");
     printerr("License GPLv3+: GNU GPL version 3 or later\n");
     printerr("This program comes with ABSOLUTELY NO WARRANTY.\n");
 }
@@ -158,7 +162,17 @@ int main(int argc, char* argv[]) {
 
     //send sequence header before we start sending packets
     if (!hardware_seqstart(devh)) {
-        goto end;
+        //try resetting device once
+        printerr("Initial write failed, attempting reset.\n");
+        if (!hardware_reset(&devh)) {
+            printerr("Reset failed: Exiting.\n");
+            goto end;
+        }
+        if (!hardware_seqstart(devh)) {
+            printerr("Initial write retry failed, giving up.\n");
+            goto end;
+        }
+        printf("Reset successful, continuing\n");
     }
 
     if (do_init) {

@@ -2,7 +2,7 @@
 
   bbusb - BetaBrite Prism LED Sign Communicator
   Hardware logic layer
-  Copyright (C) 2009  Nicholas Parker <nickbp@gmail.com>
+  Copyright (C) 2009-2011  Nicholas Parker <nickbp@gmail.com>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -45,6 +45,19 @@ int hardware_init(usbsign_handle** devhp) {
 
     return usbsign_open(SIGN_VENDOR_ID, SIGN_PRODUCT_ID,
                         SIGN_INTERFACE_NUM, devhp);
+}
+
+int hardware_reset(usbsign_handle** devhp) {
+    if (devhp == NULL) {
+        printerr("Internal error: Bad pointer to init\n");
+        return -1;
+    } else if (*devhp == NULL) {
+        printerr("Internal error: Can't reset null device\n");
+        return -1;
+    }
+
+    return usbsign_reset(SIGN_VENDOR_ID, SIGN_PRODUCT_ID,
+                         SIGN_INTERFACE_NUM, devhp);
 }
 
 int hardware_close(usbsign_handle* devh) {

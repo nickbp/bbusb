@@ -1,7 +1,7 @@
 /************************************************************************\
 
   bbusb - BetaBrite Prism LED Sign Communicator
-  Copyright (C) 2009  Nicholas Parker <nickbp@gmail.com>
+  Copyright (C) 2009-2011  Nicholas Parker <nickbp@gmail.com>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include "common.h"
 
 int hardware_init(usbsign_handle** devh);
+int hardware_reset(usbsign_handle** devh);
 int hardware_close(usbsign_handle* devh);
 int hardware_sendpkt(usbsign_handle* devh, char* data, unsigned int size);
 int hardware_seqstart(usbsign_handle* devh);

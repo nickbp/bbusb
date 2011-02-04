@@ -87,6 +87,33 @@ int usbsign_open(int vendorid, int productid,
 #endif
 }
 
+int usbsign_reset(int vendorid, int productid,
+                  int interface, usbsign_handle** dev) {
+#ifdef NOUSB
+    printf("USB Reset %X:%X %p:%d\n",vendorid,productid,(void*)dev,interface);
+    return 0;
+#else
+#ifdef OLDUSB
+    int ret = usb_reset(*dev);
+    if (ret < 0) {
+        printerr("Got error %d when resetting usb device\n", ret);
+        return ret;
+    }
+    return usbsign_open(vendorid, productid, interface, dev);
+#else
+    int ret = libusb_reset_device(*dev);
+    if (ret == LIBUSB_ERROR_NOT_FOUND) {
+        //need to close/reopen the device
+        usbsign_close(*dev, interface);
+        return usbsign_open(vendorid, productid, interface, dev);
+    } else if (ret < 0) {
+        printerr("Got error %d when resetting usb device\n", ret);
+    }
+    return ret;
+#endif
+#endif
+}
+
 void usbsign_close(usbsign_handle* dev, int interface) {
 #ifdef NOUSB
     printf("USB Close %p:%d\n",dev, interface);
