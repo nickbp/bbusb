@@ -1,6 +1,7 @@
 /************************************************************************\
 
   bbusb - BetaBrite Prism LED Sign Communicator
+  printf implementation
   Copyright (C) 2009  Nicholas Parker <nickbp@gmail.com>
 
   This program is free software: you can redistribute it and/or modify
@@ -18,35 +19,28 @@
 
 \************************************************************************/
 
-#ifndef __MAIN_H__
-#define __MAIN_H__
-
-
-//Test without a sign attached:
-//#define NOUSB
-//Use libusb-0.1 instead of libusb-1.0:
-//#define OLDUSB
-//Print generated packets to stdout:
-//#define DEBUGMSG
-
-#define VERSION "0.1"
-
-#ifdef NOUSB
-#define USBTYPE "nousb"
-#else
-#ifdef OLDUSB
-#define USBTYPE "libusb-0.1"
-#else
-#define USBTYPE "libusb-1.0"
-#endif
-#endif
-
-#include <string.h>
-
-#include "common.h"
-#include "config.h"
 #include "usbsign.h"
-#include "packet.h"
-#include "hardware.h"
 
-#endif
+int usbsign_open(int vendorid, int productid,
+                 int interface, usbsign_handle** dev) {
+    config_log("USB Open %X:%X %p:%d",vendorid,productid,(void*)dev,interface);
+    return 0;
+}
+
+int usbsign_reset(int vendorid, int productid,
+                  int interface, usbsign_handle** dev) {
+    config_log("USB Reset %X:%X %p:%d",vendorid,productid,(void*)dev,interface);
+    return 0;
+}
+
+void usbsign_close(usbsign_handle* dev, int interface) {
+    config_log("USB Close %p:%d",dev, interface);
+}
+
+int usbsign_send(usbsign_handle* dev, int endpoint,
+                 char* data, unsigned int size, int* sentcount) {
+    *sentcount = size;
+    config_log("USB Send %d bytes of data *%p to device *%p:%d",
+           size,data,dev,endpoint);
+    return 0;
+}

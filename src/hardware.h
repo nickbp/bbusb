@@ -1,3 +1,6 @@
+#ifndef __HARDWARE_H__
+#define __HARDWARE_H__
+
 /************************************************************************\
 
   bbusb - BetaBrite Prism LED Sign Communicator
@@ -18,14 +21,7 @@
 
 \************************************************************************/
 
-#ifndef __HARDWARE_H__
-#define __HARDWARE_H__
-
-#include <string.h>
-#include <time.h>
-
 #include "usbsign.h"
-#include "common.h"
 
 int hardware_init(usbsign_handle** devh);
 int hardware_reset(usbsign_handle** devh);

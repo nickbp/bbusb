@@ -21,25 +21,21 @@
 
 #include "hardware.h"
 
+#include <string.h>
+#include <time.h>
+
 //Found via lsusb while my Prism sign was plugged in:
 #define SIGN_VENDOR_ID 0x8765
 #define SIGN_PRODUCT_ID 0x1234
 #define SIGN_INTERFACE_NUM 0
 #define SIGN_ENDPOINT_NUM 2
 
-//fixes warnings when being -pedantic:
-struct timespec {
-    time_t tv_sec;        // seconds
-    long   tv_nsec;       // nanoseconds
-};
-extern int nanosleep(const struct timespec *req, struct timespec *rem);
-
 int hardware_init(usbsign_handle** devhp) {
     if (devhp == NULL) {
-        printerr("Internal error: Bad pointer to init\n");
+        config_error("Internal error: Bad pointer to init");
         return -1;
     } else if (*devhp != NULL) {
-        printerr("Internal error: Can't init twice\n");
+        config_error("Internal error: Can't init twice");
         return -1;
     }
 
@@ -49,10 +45,10 @@ int hardware_init(usbsign_handle** devhp) {
 
 int hardware_reset(usbsign_handle** devhp) {
     if (devhp == NULL) {
-        printerr("Internal error: Bad pointer to init\n");
+        config_error("Internal error: Bad pointer to init");
         return -1;
     } else if (*devhp == NULL) {
-        printerr("Internal error: Can't reset null device\n");
+        config_error("Internal error: Can't reset null device");
         return -1;
     }
 
@@ -84,24 +80,24 @@ static int hardware_sendraw(usbsign_handle* devh, char* data, unsigned int size)
     int ret = usbsign_send(devh, SIGN_ENDPOINT_NUM, data, size, &sent);
 
     if (ret < 0) {
-        printerr("Got USB error %d when sending %d bytes\n", ret, size);
+        config_error("Got USB error %d when sending %d bytes", ret, size);
         return -1;
     } else {
         ret = sent;
     }
 
     if (ret > 0) {
-#ifdef DEBUGMSG
+#ifdef DEBUG
         //print packet contents:
         unsigned int i;
-        printf("%u: ",size);
+        config_debugnn("%u: ",size);
         for (i = 0; i < size; i++) {
-            printf("%X(%c) ", data[i], data[i]);
+            config_debugnn("%X(%c) ", data[i], data[i]);
         }
-        printf("\n");
+        config_debug("");//final newline
 #endif
     } else {
-        printerr("Bad packet size %d or device %p\n",ret,(void*)devh);
+        config_error("Bad packet size %d or device %p",ret,(void*)devh);
         return -1;
     }
 

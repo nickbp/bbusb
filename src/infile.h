@@ -1,7 +1,10 @@
+#ifndef __INFILE_H__
+#define __INFILE_H__
+
 /************************************************************************\
 
   bbusb - BetaBrite Prism LED Sign Communicator
-  Copyright (C) 2009  Nicholas Parker <nickbp@gmail.com>
+  Copyright (C) 2009-2011  Nicholas Parker <nickbp@gmail.com>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,19 +21,9 @@
 
 \************************************************************************/
 
-#ifndef __CONFIG_H__
-#define __CONFIG_H__
-
-#include "common.h"
 #include "packet.h"
+#include <stdio.h>
 
-#include <ctype.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
-#include <sys/types.h>
-
-int parsecfg(struct bb_frame** output, FILE* config);
+int parsefile(struct bb_frame** output, FILE* file);
 
 #endif

@@ -1,7 +1,10 @@
+#ifndef __PACKET_H__
+#define __PACKET_H__
+
 /************************************************************************\
 
   bbusb - BetaBrite Prism LED Sign Communicator
-  Copyright (C) 2009  Nicholas Parker <nickbp@gmail.com>
+  Copyright (C) 2009-2011  Nicholas Parker <nickbp@gmail.com>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,12 +21,13 @@
 
 \************************************************************************/
 
-#ifndef __PACKET_H__
-#define __PACKET_H__
+#define NO_SPECIAL 0
 
-#include <sys/types.h>
-#include <string.h>
-#include <stdlib.h>
+#define MIN_TEXTFILE_DATA_SIZE 128
+#define MAX_TEXTFILE_DATA_SIZE 4096 //arbitrary tested-safe limits found by trial and error
+
+#define MAX_STRINGFILE_DATA_SIZE 125 //need to partition text into multiple STRINGs :(
+#define MAX_STRINGFILE_GROUP_COUNT 4 //number of STRINGS allowed in a single message (also by trial and error)
 
 enum frame_type_t { STRING_FRAME_TYPE=1, TEXT_FRAME_TYPE };
 struct bb_frame {
@@ -34,16 +38,6 @@ struct bb_frame {
     char* data;
     struct bb_frame* next;
 };
-
-#include "common.h"
-
-#define NO_SPECIAL 0
-
-#define MIN_TEXTFILE_DATA_SIZE 128
-#define MAX_TEXTFILE_DATA_SIZE 4096 //arbitrary tested-safe limits found by trial and error
-
-#define MAX_STRINGFILE_DATA_SIZE 125 //need to partition text into multiple STRINGs :(
-#define MAX_STRINGFILE_GROUP_COUNT 4 //number of STRINGS allowed in a single message (also by trial and error)
 
 char packet_next_filename(char prev_filename);
 

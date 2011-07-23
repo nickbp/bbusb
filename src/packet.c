@@ -21,6 +21,11 @@
 
 #include "packet.h"
 
+#include <sys/types.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 //available filename ranges, inclusive: see pg50
 //static const char filenamepool_firsts[] = {0x20,0x36,0x40,0},
 //    filenamepool_lasts[] = {0x2f,0x3e,0x7e,0};
@@ -49,9 +54,9 @@ char packet_next_filename(char prev_filename) {
         ++i;
     }
     //reached end of pool, give up
-    printerr("Too many messages in config file (ran out of message labels).\n");
-    printerr("Max %d labels: cmds cost %d labels each, txts cost 1 label each.\n", MAX_LABEL_COUNT, MAX_STRINGFILE_GROUP_COUNT+1);
-    printerr("In your config file, reduce the total number of messages, or convert some cmds to txts to save space.\n");
+    config_error("Too many messages in config file (ran out of message labels).");
+    config_error("Max %d labels: cmds cost %d labels each, txts cost 1 label each.", MAX_LABEL_COUNT, MAX_STRINGFILE_GROUP_COUNT+1);
+    config_error("In your config file, reduce the total number of messages, or convert some cmds to txts to save space.");
     return -1;
 }
 
@@ -100,16 +105,14 @@ int packet_buildmemconf(char** outputptr, struct bb_frame* frames) {
             } else if (datasize > (int)MAX_TEXTFILE_DATA_SIZE) {
                 datasize = MAX_TEXTFILE_DATA_SIZE;
             }
-#ifdef DEBUGMSG
-            printf("datasize=%d (0x%x) for %s\n",datasize,datasize,curframe->data);
-#endif
+            config_debug("datasize=%d (0x%x) for %s",datasize,datasize,curframe->data);
         } else if (curframe->frame_type == STRING_FRAME_TYPE) {
             flag = stringflag;
             tail = stringtail;
             //always alloc full size, even if string is currently empty:
             datasize = MAX_STRINGFILE_DATA_SIZE;
         } else {
-            printerr("Internal error: Unknown frame type %d\n",curframe->frame_type);
+            config_error("Internal error: Unknown frame type %d",curframe->frame_type);
             return -1;
         }
 
@@ -145,7 +148,7 @@ int packet_buildstring(char** outputptr, char filename, char* text) {
         textlen = strlen(text);
     }
     if (textlen > MAX_STRINGFILE_DATA_SIZE) {
-        printerr("Warning: shrank a string frame to fit %d bytes.\n",MAX_STRINGFILE_DATA_SIZE);
+        config_error("Warning: shrank a string frame to fit %d bytes.",MAX_STRINGFILE_DATA_SIZE);
         textlen = MAX_STRINGFILE_DATA_SIZE;
     }
 
@@ -178,7 +181,7 @@ int packet_buildtext(char** outputptr, char filename,
         textlen = strlen(text);
     }
     if (textlen > MAX_TEXTFILE_DATA_SIZE) {
-        printerr("Warning: shrank a text frame to fit %d bytes.\n",
+        config_error("Warning: shrank a text frame to fit %d bytes.",
                  MAX_TEXTFILE_DATA_SIZE);
         textlen = MAX_TEXTFILE_DATA_SIZE;
     }
@@ -222,7 +225,7 @@ int packet_buildrunseq(char** outputptr, struct bb_frame* frames) {
     const char cmdcode = 'E', runseqcode = 0x2E,
         runseqtype = 'S', lockflag = 'U';
 
-    size_t pktsize = sizeof(cmdcode) + sizeof(runseqcode) + 
+    size_t pktsize = sizeof(cmdcode) + sizeof(runseqcode) +
         sizeof(runseqtype) + sizeof(lockflag);
     struct bb_frame* curframe = frames;
     while (curframe != NULL) {
@@ -270,4 +273,3 @@ void packet_delete(struct bb_frame* delme) {
         free(delme->data);
     }
 }
-
