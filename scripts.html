@@ -1,0 +1,48 @@
+---
+layout: default
+title: //bbusb/scripts
+---
+<p class="header">Scripts</p>
+
+<p>I've written a few <a href="https://github.com/nickbp/bbusb/tree/master/scripts">starter scripts</a> in Python, but keep in mind that these can be written in any language, just as long as they follow the common <a href="docs.shtml#syntax">formatting syntax</a> for their output.</p>
+
+<p>Note that many of the service scripts use a cacheing mechanism to avoid hammering their respective data sources. Caches are stored in the same directory as the script, so you'll want to ensure that directory isn't read-only.</p>
+
+<p class="header">Service Scripts</p>
+
+<p><span class="subheader">Charlie Chan</span><br/>
+$ bbcc.py</p>
+
+<p>Charlie Chan say, Use this script to spread <a href="http://charliechanfamily.tripod.com/id6.html">my wisdom</a>.</p>
+
+<p><span class="subheader">Final Gear</span><br/>
+$ bbfinalgear.py</p>
+
+<p>Retrieves and displays Top Gear/Final Gear countdown data as seen on <a href="http://finalgear.com">FinalGear.com</a>.</p>
+
+<p><span class="subheader">Finance</span><br/>
+$ bbstock.py &lt;symbolset></p>
+
+<p>Provides stock information for various company stocks, indices, and market indicators. The symbolsets can be modified within the script. Run "bbstock.py" with no arguments to see available default symbolsets. For example, "bbstock.py index" to see some US stock indices.</p>
+
+<p><span class="subheader">Fortune</span><br/>
+$ bbfortune.py</p>
+
+<p>Returns a random fortune (via fortune-mod). Script can be modified to allow only certain fortune files (defaults to known-worksafe files).</p>
+
+<p><span class="subheader">RSS</span><br/>
+$ bbrss.py &lt;source/rssurl></p>
+
+<p>Prints a single randomly-selected article from an RSS feed. You can either choose from a list of predefined news sources, or provide a URL to your own RSS feed. Run with no arguments to see the list of predefined sources.</p>
+
+<p><span class="subheader">Weather</span><br/>
+$ bbweather.py &lt;zipcode></p>
+
+<p>Prints out a brief forecast. Edit the "numdays" variable to change the length of the forecast.</p>
+
+<p class="header">Utility Scripts</p>
+
+<p><span class="subheader">Repeat Execution</span><br/>
+$ cmdrepeat.py &lt;delay (minutes)> &lt;command arg arg ...></p>
+
+<p>Unlike the above service scripts, this utility script isn't meant to be run by bbusb. Instead, it's meant for repeatedly running bbusb (and updating your sign) with a set interval, without needing to set up a cron job (or similar). For example, running "cmdrepeat.py 1 bbusb -u config.txt" will update your sign once a minute using the provided config file.</p>

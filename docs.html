@@ -1,0 +1,175 @@
+---
+layout: default
+title: //bbusb/docs
+---
+<p class="header">How it works<p>
+
+<p>bbusb runs in a three-step process:
+<ol>
+<li>First, it reads the contents of a config file. This file contains a list of static text to be displayed and/or dynamic commands to run.</li>
+<li>If any dynamic commands were listed in the config, bbusb executes those commands and collects their printed output.</li>
+<li>Finally, bbusb processes any <a href="#formatting">formatting codes</a> in the output it's collected, and sends the processed results to the sign. This content will be continuously displayed on the sign until it is again updated by bbusb.</li>
+</ol>
+
+<p class="header">Examples</p>
+
+<p>Let's take a quick tour of how this works from the ground up. First, we'll start with a program that produces the data we want to display. Then we'll take a look at the config file which tells bbusb how to run that program. Finally we'll run bbusb with the config file and see the chain in action.
+
+<p class="subheader">An example program</p>
+
+<p>Let's make a simple shell script which takes the output of the unix "date" command and adds some <a href="#formatting">bbusb formatting</a> around it:</p>
+
+<p class="code">#!/bin/sh<br/>
+echo &lt;color300>&lt;wide>The time is&lt;/wide> &amp;rightarrow; &lt;color030>$(date) &lt;color300>&amp;leftarrow;</p>
+
+<p>When the above script is run and processed by bbusb, it will look like this on the sign:</p>
+
+<p><font color="#FF0000"><b>The time is</b> &rarr; </font><font color="#00FF00"><!--#config timefmt="%a %b %d %H:%M:%S %Z %Y" --><!--#echo var="DATE_LOCAL" --> </font><font color="#FF0000">&larr;</font></p>
+
+<p>This is a fairly boring example, but it shows how powerful this system can be. As long as you can write a program which produces what you want to display when it's executed, bbusb can take that output and put it on your sign.
+
+<p class="subheader">An example config</p>
+
+<p>Now we should create the config file which will be passed to bbusb. The format for this file is simple:</p>
+
+<ul><li>Comments start with # or //:<br/>
+<div class="code">#<i>comment</i><br/>
+//<i>comment</i></div></li>
+
+<li>Dynamic commands start with "cmd":<br/>
+<div class="code">cmd <i>mode command</i></div></li>
+
+<li>Static text starts with with "txt":<br/>
+<div class="code">txt <i>mode text</i></div></li></ul>
+
+<p>The available <i>mode</i>s are listed <a href="#modes">below</a>. Here's an example config:</p>
+
+<p class="code">//this is a comment<br/>
+txt a &lt;color300>hello world!<br/>
+cmd b date<br/>
+cmd c sh script.sh</p>
+
+<p>Given the above config, bbusb will do the following:</p>
+
+<ol><li>Ignore the first line, it's a comment.</li>
+<li>Display the text <i>hello world!</i> in bright red with mode <i>a</i>.</li>
+<li>Run the command <i>date</i> and display its output with mode <i>b</i>.</li>
+<li>Run the command <i>sh test.sh</i> and display its output with mode <i>c</i>. This would be for running the example script we just wrote.</li></ol>
+
+<p class="subheader">Running the example</p>
+
+<p>Now that we've written our config, let's send it to bbusb. The syntax for doing this is:
+
+<p class="code">bbusb &lt;-i/-u> &lt;configfile></p>
+
+<p>As implied by the -i and -u flags, there are two ways of running bbusb. The first way is to <i>-i</i>nitialize the sign. The second is to <i>-u</i>pdate the sign. Whenever you change your config file, you <b>must</b> initialize your sign before you update it. In other words, if you modify your config file or use a different config file, you'll need to run "-i" once against that new config before you'll be able to use "-u". Note that running "-i" will also update the content on your sign, so you <i>don't</i> need to immediately follow a "-i" with a "-u" to start seeing your new content.</p>
+
+<p>Why does bbusb have two modes, instead of just always re-initializing the sign every time it's run? If you run with -i a few times, you'll notice that it causes the sign to flicker or go blank for a couple seconds, whereas with -u it smoothly updates the sign content without interruption. Turns out that initializing the sign causes it to flicker, so we only do that when it's actually necessary. After that first <i>-i</i>nitialization against a given config, we can then <i>-u</i>pdate against it, flicker free, as many times as we want.</p>
+
+<p>How does this work in practice? Here's an example scenario:</p>
+
+<p class="code">> bbusb -i configA<br/>
+> bbusb -u configA<br/>
+> bbusb -u configA<br/>
+> bbusb -i configB<br/>
+> bbusb -u configB<br/>
+> bbusb -u configB<br/>
+> bbusb -u configB</p>
+
+<p>In this scenario, we start off by initializing against configA, followed by two updates against configA. We then decide to switch to configB, which is a modified copy of configA. Because this new config is different, we have to initialize against it, which causes the sign to flicker, before we can resume updating flicker-free.</p>
+
+<p class="subheader">Putting it all together</p>
+
+<p>So now that we have a script, a config, and the procedure for running bbusb, let's give it a go:</p>
+
+<p class="code">Example script: <b>script.sh</b><br/>
+#!/bin/sh<br/>
+echo &lt;color300>&lt;wide>The time is&lt;/wide> &amp;rightarrow; &lt;color030>$(date) &lt;color300>&amp;leftarrow;</p>
+
+<p class="code">Example config: <b>config.txt</b><br/>
+//this is a comment<br/>
+txt a &lt;color300>hello world!<br/>
+cmd b date<br/>
+cmd c sh <b>script.sh</b></p>
+
+<p class="code">Running our example:<br/>
+> bbusb -i <b>config.txt</b><br/>
+> bbusb -u <b>config.txt</b><br/>
+> bbusb -u <b>config.txt</b><br/>
+...</p>
+
+<p>That's all there is to it.</p>
+
+<p class="header"><a name="syntax"></a>Syntax Reference</p>
+
+<p>You can also view this reference by running "bbusb -h". You can also see some of this in action by playing with some of the <a href="scripts.shtml">scripts</a> posted to this site.</p>
+
+<p class="subheader"><a name="modes"></a>Config Modes</p>
+
+<p>These are the available modes for using in your config file.<br/>
+I tend to just use "a" for everything. Feel free to experiment.</p>
+
+<table cellpadding="1" cellspacing="1">
+<tr><td>Mode</td><td>Desc</td>  <td>Mode</td><td>Desc</td>    <td>Mode</td><td>Desc</td></tr>
+<tr><td>a</td><td>rotate</td>   <td>p</td><td>rollin</td>     <td>n8</td><td>welcome</td></tr>
+<tr><td>b</td><td>hold</td>     <td>q</td><td>rollout</td>    <td>n9</td><td>sale</td></tr>
+<tr><td>c</td><td>flash</td>    <td>r</td><td>wipein</td>     <td>na</td><td>newsflash</td></tr>
+<tr><td>e</td><td>rollup</td>   <td>s</td><td>wipeout</td>    <td>nb</td><td>happy4th</td></tr>
+<tr><td>f</td><td>rolldn</td>   <td>t</td><td>comprotate</td> <td>nc</td><td>cyclecolor</td></tr>
+<tr><td>g</td><td>rolleft</td>  <td>n0</td><td>twinkle</td>   <td>ns</td><td>thankyou</td></tr>
+<tr><td>h</td><td>rollright</td><td>n1</td><td>sparkle</td>   <td>nu</td><td>nosmoking</td></tr>
+<tr><td>i</td><td>wipeup</td>   <td>n2</td><td>snow</td>      <td>nv</td><td>dontdrink</td></tr>
+<tr><td>j</td><td>wipedn</td>   <td>n3</td><td>interlock</td> <td>nw</td><td>fish</td></tr>
+<tr><td>k</td><td>wipeleft</td> <td>n4</td><td>switch</td>    <td>nx</td><td>fireworks</td></tr>
+<tr><td>l</td><td>wiperight</td><td>n5</td><td>cyclecolor</td><td>ny</td><td>xmas</td></tr>
+<tr><td>m</td><td>scroll</td>   <td>n6</td><td>spray</td>     <td>nz</td><td>smile</td></tr>
+<tr><td>o</td><td>automode</td> <td>n7</td><td>starburst</td></tr>
+</table>
+
+<p class="subheader"><a name="formatting"></a>Formatting Codes</p>
+
+<p>This is the in-line formatting syntax for telling bbusb how you'd like text to be displayed. This is what you use to select fonts and colors. Note that some &lt;code>s do not have a matching &lt;/code>, due to how the underlying sign protocol works.</p>
+
+<table cellpadding="1" cellspacing="1">
+<tr><td>Format Code(s)</td><td>Description</td></tr>
+<tr><td>&lt;left></td><td>Left-align the text in this frame. Only works in some frame modes (eg "hold")</td></tr>
+<tr><td>&lt;speedN></td><td>Set frame display speed. speed1 = slowest, speed6 = fastest.</td></tr>
+<tr><td>&lt;br></td><td>Start of next display frame (allows multiple frames in one command).</td></tr>
+<tr><td>&lt;blink>,&lt;/blink></td><td>Enable/disable blinking text. Only works in some frame modes (eg "hold").</td></tr>
+<tr><td>&lt;small></td><td>Switch to a smaller font.</td></tr>
+<tr><td>&lt;normal></td><td>Switch back to normal size.</td></tr>
+<tr><td>&lt;wide>,&lt;/wide></td><td>Widen the text.</td></tr>
+<tr><td>&lt;dblwide>,&lt;/dblwide></td><td>Widen the text more.</td></tr>
+<tr><td>&lt;serif>,&lt;/serif></td><td>Switch to a serif font.</td></tr>
+<tr><td>&lt;shadow>,&lt;/shadow></td><td>Apply a shadow to the text.</td></tr>
+<tr><td>&lt;colorRGB></td><td>Change the text foreground color. R,G,B may each be any number between 0 and 3 (eg &lt;color303> for bright purple, &lt;color101> for dim purple)</td></tr>
+<tr><td>&lt;scolorRGB></td><td>Change the text shadow color (for text with &lt;shadow> applied). Uses same RGB codes as &lt;colorRGB>.</td></tr>
+</table>
+
+<p class="subheader">Symbol Entities</p>
+
+<p>Use these to display special characters on your sign.<br/>
+See the script above for an example use of the arrow entities.</p>
+
+<table>
+<tr><td>Code</td><td>Result</td>                     <td>Code</td><td>Result</td></tr>
+<tr><td>&amp;uparrow;</td><td>&uarr;</td>            <td>&amp;downarrow;</td><td>&darr;</td></tr>
+<tr><td>&amp;leftarrow;</td><td>&larr;</td>          <td>&amp;rightarrow;</td><td>&rarr;</td></tr>
+
+<tr><td>&amp;cent;</td><td>&cent;</td>               <td>&amp;gbp;</td><td>&pound;</td></tr>
+<tr><td>&amp;yen;</td><td>&yen;</td>                 <td>&amp;euro;</td><td>&euro;</td></tr>
+
+<tr><td>&amp;disk;</td><td>(Floppy Disk)</td>        <td>&amp;printer;</td><td>(Printer)</td></tr>
+<tr><td>&amp;phone;</td><td>&#9742;</td>             <td>&amp;satdish;</td><td>(Satellite Dish)</td></tr>
+
+<tr><td>&amp;car;</td><td>(Car)</td>                 <td>&amp;boat;</td><td>(Boat)</td></tr>
+<tr><td>&amp;male;</td><td>&#9794;</td>              <td>&amp;female;</td><td>&#9792;</td></tr>
+
+<tr><td>&amp;heart;</td><td>&hearts;</td>            <td>&amp;pacman;</td><td>(Pacman)</td></tr>
+<tr><td>&amp;ball;</td><td>(Sphere/Ball)</td>        <td>&amp;note;</td><td>&#9834;</td></tr>
+
+<tr><td>&amp;mug;</td><td>(Drinking Mug)</td>        <td>&amp;bottle;</td><td>(Drinking Bottle)</td></tr>
+<tr><td>&amp;handicap;</td><td>(Handicap Symbol)</td><td>&amp;copy;</td><td>&copy;</td></tr>
+
+<tr><td>&amp;rhino;</td><td>(Rhinoceros)</td>        <td>&amp;infinity;</td><td>&infin;</td></tr>
+</table>
