@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
 		};
 
 		int option_index = 0;
-		c = getopt_long(argc, argv, "hvliu",
+		c = getopt_long(argc, argv, "hvl:iu",
 				long_options, &option_index);
 		if (c == -1) {//unknown arg (doesnt match -x/--x format)
 			if (optind >= argc) {
