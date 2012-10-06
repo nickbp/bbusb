@@ -38,11 +38,11 @@ typedef void usbsign_handle;
 #endif
 
 int usbsign_open(int vendorid, int productid,
-		int interface, usbsign_handle** devh);
+        int interface, usbsign_handle** devh);
 int usbsign_reset(int vendorid, int productid,
-		int interface, usbsign_handle** devh);
+        int interface, usbsign_handle** devh);
 void usbsign_close(usbsign_handle* dev, int interface);
 int usbsign_send(usbsign_handle* dev, int endpoint,
-		char* data, unsigned int size, int* sentcount);
+        char* data, unsigned int size, int* sentcount);
 
 #endif

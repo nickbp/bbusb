@@ -26,47 +26,47 @@ FILE *config_fout, *config_ferr;
 
 int config_debug_enabled = 0;
 void config_debug(const char* format, ...) {
-	if (config_debug_enabled) {
-		va_list args;
-		va_start(args, format);
-		vfprintf(config_fout, format, args);
-		va_end(args);
-		fprintf(config_fout, "\n");
-	}
+    if (config_debug_enabled) {
+        va_list args;
+        va_start(args, format);
+        vfprintf(config_fout, format, args);
+        va_end(args);
+        fprintf(config_fout, "\n");
+    }
 }
 void config_debugnn(const char* format, ...) {
-	if (config_debug_enabled) {
-		va_list args;
-		va_start(args, format);
-		vfprintf(config_fout, format, args);
-		va_end(args);
-	}
+    if (config_debug_enabled) {
+        va_list args;
+        va_start(args, format);
+        vfprintf(config_fout, format, args);
+        va_end(args);
+    }
 }
 
 void config_log(const char* format, ...) {
-	va_list args;
-	va_start(args, format);
-	vfprintf(config_fout, format, args);
-	va_end(args);
-	fprintf(config_fout, "\n");
+    va_list args;
+    va_start(args, format);
+    vfprintf(config_fout, format, args);
+    va_end(args);
+    fprintf(config_fout, "\n");
 }
 void config_lognn(const char* format, ...) {
-	va_list args;
-	va_start(args, format);
-	vfprintf(config_fout, format, args);
-	va_end(args);
+    va_list args;
+    va_start(args, format);
+    vfprintf(config_fout, format, args);
+    va_end(args);
 }
 
 void config_error(const char* format, ...) {
-	va_list args;
-	va_start(args, format);
-	vfprintf(config_ferr, format, args);
-	va_end(args);
-	fprintf(config_ferr, "\n");
+    va_list args;
+    va_start(args, format);
+    vfprintf(config_ferr, format, args);
+    va_end(args);
+    fprintf(config_ferr, "\n");
 }
 void config_errornn(const char* format, ...) {
-	va_list args;
-	va_start(args, format);
-	vfprintf(config_ferr, format, args);
-	va_end(args);
+    va_list args;
+    va_start(args, format);
+    vfprintf(config_ferr, format, args);
+    va_end(args);
 }

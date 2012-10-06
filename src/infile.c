@@ -180,7 +180,7 @@ static int parse_color_code(char* out, char* in) {
             break;
         default:
             config_error("Found invalid color \"%c\" in <scolorRGB>/<colorRGB> (R,G,B=0-3).",
-					in[i]);
+                    in[i]);
             return -1;
         }
     }
@@ -188,7 +188,7 @@ static int parse_color_code(char* out, char* in) {
 }
 
 static int parse_inline_cmds(char** outptr, int* output_is_trimmed, char* in, unsigned int maxout) {
-	config_debug("orig: %s",in);
+    config_debug("orig: %s",in);
     size_t iin = 0, iout = 0;
     char* out = malloc(maxout);
     while (iin < strlen(in)) {
@@ -212,7 +212,7 @@ static int parse_inline_cmds(char** outptr, int* output_is_trimmed, char* in, un
             while (replacesrc[i] != 0) {
                 //search replacement table:
                 if (strncmp(replacesrc[i],&in[iin],
-								strlen(replacesrc[i])) == 0) {
+                                strlen(replacesrc[i])) == 0) {
                     strncpy(addme,replacedst[i],strlen(replacedst[i])+1);
                     parsedlen = strlen(replacesrc[i]);
                     break;
@@ -223,7 +223,7 @@ static int parse_inline_cmds(char** outptr, int* output_is_trimmed, char* in, un
             if (parsedlen == 0) {
                 //special tags: colorRGB/scolorRGB(0-3) speedN(1-6)
                 if (strncmp("<color",&in[iin],6) == 0 &&
-						index(&in[iin+6],'>') == &in[iin+9]) {//<colorRGB>
+                        index(&in[iin+6],'>') == &in[iin+9]) {//<colorRGB>
                     if (parse_color_code(&addme[2],&in[iin+6]) >= 0) {
                         addme[0] = 0x1c;
                         addme[1] = 'Z';
@@ -232,7 +232,7 @@ static int parse_inline_cmds(char** outptr, int* output_is_trimmed, char* in, un
                         parsedlen = 10;
                     }
                 } else if (strncmp("<scolor",&in[iin],7) == 0 &&
-						index(&in[iin+7],'>') == &in[iin+10]) {//<colorRGB>
+                        index(&in[iin+7],'>') == &in[iin+10]) {//<colorRGB>
                     if (parse_color_code(&addme[2],&in[iin+7]) >= 0) {
                         addme[0] = 0x1c;
                         addme[1] = 'Y';
@@ -241,7 +241,7 @@ static int parse_inline_cmds(char** outptr, int* output_is_trimmed, char* in, un
                         parsedlen = 11;
                     }
                 } else if (strncmp("<speed",&in[iin],6) == 0 &&
-						index(&in[iin+6],'>') == &in[iin+7]) {//<speedN>
+                        index(&in[iin+6],'>') == &in[iin+7]) {//<speedN>
                     char speedin = in[iin+6];
                     if (speedin >= '1' && speedin <= '5') {
                         //speeds 1(0x31)-5(0x35) -> char 0x15-0x19
@@ -257,7 +257,7 @@ static int parse_inline_cmds(char** outptr, int* output_is_trimmed, char* in, un
                         parsedlen = 8;
                     } else {
                         config_error("Found invalid speed \"%c\" in <speedN> (N=1-6).",
-								speedin);
+                                speedin);
                     }
                 }
             }
@@ -336,11 +336,11 @@ int parsefile(struct bb_frame** output, FILE* file) {
                 int is_trimmed = 0;
 
                 int charsparsed = parse_inline_cmds(&curframe->data,&is_trimmed,
-						text,MAX_TEXTFILE_DATA_SIZE);
+                        text,MAX_TEXTFILE_DATA_SIZE);
 
                 if (is_trimmed) {
                     config_error("Warning, line %d: Data has been truncated at input index %d to fit %d available output bytes.",
-							linenum,charsparsed,MAX_TEXTFILE_DATA_SIZE);
+                            linenum,charsparsed,MAX_TEXTFILE_DATA_SIZE);
                     config_error("Input vs output bytecount can vary if you used inline commands in your input.");
                 }
             }
@@ -389,12 +389,12 @@ int parsefile(struct bb_frame** output, FILE* file) {
                 int is_trimmed = 0;
                 char* parsed_result;
                 int charsparsed = parse_inline_cmds((char**)&parsed_result,&is_trimmed,
-						&raw_result[cumulative_parsed],
-						MAX_STRINGFILE_DATA_SIZE);
+                        &raw_result[cumulative_parsed],
+                        MAX_STRINGFILE_DATA_SIZE);
                 cumulative_parsed += charsparsed;
                 if (is_trimmed && i+1 == MAX_STRINGFILE_GROUP_COUNT) {
                     config_error("Warning, line %d: Data has been truncated at input index %d to fit %d available output bytes.",
-							linenum,cumulative_parsed,MAX_STRINGFILE_GROUP_COUNT*MAX_STRINGFILE_DATA_SIZE);
+                            linenum,cumulative_parsed,MAX_STRINGFILE_GROUP_COUNT*MAX_STRINGFILE_DATA_SIZE);
                     config_error("Input vs output bytecount can vary if you used inline commands in your input.");
                 }
 
@@ -450,7 +450,7 @@ int parsefile(struct bb_frame** output, FILE* file) {
             nextframeptr = &curframe->next;
 
         } else if ((strlen(cmd) >= 2 && cmd[0] == '/' && cmd[1] == '/') ||
-				(strlen(cmd) >= 1 && cmd[0] == '#')) {
+                (strlen(cmd) >= 1 && cmd[0] == '#')) {
 
             //comment in input file, do nothing
 
