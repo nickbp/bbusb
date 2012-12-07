@@ -142,7 +142,7 @@ static char* replacesrc[] = {
     "&heart;","&car;","&handicap;","&rhino;",
     "&mug;","&satdish;","&copy;","&female;",
     "&male;","&bottle;","&disk;","&printer;",
-    "&note;","&infinity;",0
+    "&note;","&infinity;","&deg;",0
 };
 static char* replacedst[] = {
     "\x1e" "1","\x0c","\x07" "1","\x07" "0",
@@ -155,7 +155,7 @@ static char* replacedst[] = {
     "\xcc","\xcd","\xce","\xcf",
     "\xd0","\xd1","\xd2","\xd3",
     "\xd4","\xd5","\xd6","\xd7",
-    "\xd8","\xd9",0
+    "\xd8","\xd9","\xa9",0
 };
 
 #define COLOR_LEN 6 //number of chars in a color
