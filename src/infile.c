@@ -43,24 +43,27 @@ static int readline(char** lineptr, FILE* config) {
     char c;
     size_t i = 0;
     while ((c = fgetc(config)) != EOF) {
+        if (feof(config)) {
+            break;//raspbian has a bogus libc?
+        }
         if (c == '\r') {
             continue;
-        } else if (c == '\n') {
+        }
+        if (c == '\n') {
             if (i == 0) {
                 continue;//its an empty line, keep going to next line
             } else {
                 break;//end of line
             }
-        } else {
-            if (i == buflen) {
-                buflen *= 2;
-                line = realloc(line,buflen);
-                if (line == NULL) {
-                    return -1;
-                }
-            }
-            line[i++] = c;
         }
+        if (i == buflen) {
+            buflen *= 2;
+            line = realloc(line,buflen);
+            if (line == NULL) {
+                return -1;
+            }
+        }
+        line[i++] = c;
     }
     //append \0 to line, shrink buffer to match length of line:
     if (i > 0) {
@@ -105,6 +108,9 @@ static int runcmd(char** output, char* command) {
 
     char c;
     while ((c = fgetc(result_stream)) != EOF) {
+        if (feof(result_stream)) {
+            break;//raspbian has a bogus libc?
+        }
         if (i == buflen) {
             buflen *= 2;
             result = realloc(result,buflen);
