@@ -5,3 +5,5 @@ Building bbusb:
 3) "cmake ../src"
 4) "make"
 5) See "build/bbusb"
+
+Docs: http://nickbp.github.io/bbusb/
