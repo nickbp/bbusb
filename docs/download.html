@@ -1,0 +1,35 @@
+---
+layout: default
+title: bbusb/download
+---
+<p class="header">Prerequisites</p>
+
+<ul>
+<li>gcc</li>
+<li>CMake</li>
+<li>libusb-1.0 OR libusb-0.1. Be sure to install the "-dev" package!</li>
+</ul>
+
+<p class="header">Getting the Code</p>
+
+<p>Get the latest <a href="https://github.com/nickbp/bbusb">Source Code</a> from Git.</p>
+
+<p class="code">$ git clone git://github.com/nickbp/bbusb.git</p>
+
+<p class="header">Building</p>
+
+<p>CMake should automatically detect the presence of libusb-1.0 and/or libusb-0.1. If both are found, 1.0 is selected by default. If neither is found, the build falls back to a "nousb" mode where it just prints to stdout, which isnt terribly useful for most people.</p>
+
+<p>Here's a step-by-step:</p>
+
+<p class="code">$ cd bbusb <i>(where LICENCE is found)</i><br/>
+$ mkdir build<br/>
+$ cd build<br/>
+$ cmake ../src <i>(detects libusb and creates makefiles)</i><br/>
+$ make</p>
+
+<p>That should do it! Your executable will be found at build/bbusb. The build can optionally be configured with tools like "ccmake" and "cmake-gui".</p>
+
+<p class="header">Windows</p>
+
+<p>This code <i>should</i> also work under Windows, provided that one sets up a Windows build environment with libusb-win32, which is equivalent to libusb-0.1.</p>
